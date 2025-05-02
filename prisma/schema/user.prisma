@@ -7,8 +7,12 @@ enum Role {
 model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
-  email     String   @unique
-  phoneNumber String?
+  email     String
+  phoneNumber String
+  aboutMe String?
+  firstName String?
+  lastName String?
+  isOnline Boolean @default(true)
   avatarUrl String?
   password  String
   createdAt DateTime @default(now())

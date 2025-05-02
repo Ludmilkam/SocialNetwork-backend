@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { Role } from "@prisma/client";
 
 export const signInSchema = z.object({
     email: z.string().email(),
@@ -11,8 +10,5 @@ export const signInSchema = z.object({
 export const signUpSchema = signInSchema.extend({
     username: z.string().min(4, "username must contain at least 4 characters"),
 });
-export const createUserSchema = signUpSchema.extend({
-    role: z.optional(z.nativeEnum(Role)),
-    phoneNumber: z.string().min(10).optional()
-});
-export const updateUserSchema = createUserSchema.omit({ password: true });
+
+export const updateUserSchema = signUpSchema.omit({ password: true });
