@@ -13,5 +13,6 @@ export const signUpSchema = signInSchema.extend({
 });
 export const createUserSchema = signUpSchema.extend({
     role: z.optional(z.nativeEnum(Role)),
+    phoneNumber: z.string().min(10).optional()
 });
 export const updateUserSchema = createUserSchema.omit({ password: true });

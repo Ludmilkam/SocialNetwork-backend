@@ -1,8 +1,14 @@
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
-  email     String   
-  phoneNumber String
+  email     String   @unique
+  phoneNumber String?
   avatarUrl String?
   password  String
   createdAt DateTime @default(now())

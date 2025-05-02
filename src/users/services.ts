@@ -4,7 +4,6 @@ import {
     ShowUser,
     signInInput,
     signUpInput,
-    updateUserInput,
     User,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
@@ -34,7 +33,7 @@ export class UsersService {
     private usersRepo: UsersRepository;
     private hashSalt: number;
 
-    constructor() {
+    constructor(usersRepo: UsersRepository) {
         this.usersRepo = new UsersRepository();
         this.hashSalt = 10;
     }
@@ -106,20 +105,9 @@ export class UsersService {
         }
     }
 
-    async updateUser(data: updateUserInput, userId: number): Promise<User> {
-        return await this.usersRepo.updateById(userId, data);
-    }
     async listUsers(): Promise<ShowUser[]> {
         const users = await this.usersRepo.list();
         return users.map((user) => ({ ...user, password: undefined }));
     }
-    async deleteUser(userId: number): Promise<void> {
-        try {
-            await this.usersRepo.deleteById(userId);
-        } catch (err) {
-            if (err instanceof NotFoundError)
-                throw new UserNotFoundError("id=" + userId);
-            throw err;
-        }
-    }
+
 }

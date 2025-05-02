@@ -10,7 +10,5 @@ router.get("/:id", container.handlers.getUser);
 
 router.get("/admin/list-users", container.handlers.listUsers);
 router.post("/admin/create", container.handlers.createUser);
-router.delete("/admin/delete/:id", container.handlers.deleteUser);
-router.patch("/admin/update/:id", container.handlers.updateUser);
 
 export default router;
