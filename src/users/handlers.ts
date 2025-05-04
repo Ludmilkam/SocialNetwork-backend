@@ -8,10 +8,10 @@ import { validateObjectId, validateRequest } from "../core/validation";
 import {
     InvalidCredentialsError,
     UserAlreadyExistsError,
-    UserNotFoundError,
     UsersService,
 } from "./services";
 import {
+    createUserSchema,
     signInSchema,
     signUpSchema,
 } from "./schemas";
@@ -72,6 +72,20 @@ export class UsersHandlers {
         } catch (err) {
             if (err instanceof InvalidCredentialsError) {
                 throw new HTTPNotFoundError("User not found");
+            }
+            throw err;
+        }
+    };
+
+    public createUser = async (req: Request, res: Response): Promise<void> => {
+        requireAdmin(res);
+        const body = validateRequest(req, createUserSchema);
+        try {
+            const user = await this.service.createUser(body);
+            res.status(200).json(getSuccededResponse(user));
+        } catch (err) {
+            if (err instanceof UserAlreadyExistsError) {
+                throw new HTTPConflictError(err.message);
             }
             throw err;
         }

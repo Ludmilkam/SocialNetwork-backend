@@ -11,4 +11,6 @@ export const signUpSchema = signInSchema.extend({
     username: z.string().min(4, "username must contain at least 4 characters"),
 });
 
+export const createUserSchema = signUpSchema
+
 export const updateUserSchema = signUpSchema.omit({ password: true });
