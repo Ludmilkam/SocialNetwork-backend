@@ -7,7 +7,7 @@ enum Role {
 model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
-  email     String
+  email     String   @unique
   phoneNumber String
   aboutMe String?
   firstName String?
