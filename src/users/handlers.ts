@@ -8,6 +8,7 @@ import { validateObjectId, validateRequest } from "../core/validation";
 import {
     InvalidCredentialsError,
     UserAlreadyExistsError,
+    usersService,
     UsersService,
 } from "./services";
 import {
@@ -19,8 +20,9 @@ import { getSuccededResponse } from "../core/utils";
 import { requireAdmin, requireAuthorized } from "./utils";
 
 export class UsersHandlers {
-    constructor(public service: UsersService) {
-        this.service = service;
+    public service: UsersService;
+    constructor() {
+        this.service = usersService;
     }
 
     public signUp = async (req: Request, res: Response) => {

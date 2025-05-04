@@ -33,7 +33,7 @@ export class UsersService {
     private usersRepo: UsersRepository;
     private hashSalt: number;
 
-    constructor(usersRepo: UsersRepository) {
+    constructor() {
         this.usersRepo = new UsersRepository();
         this.hashSalt = 10;
     }
@@ -111,3 +111,5 @@ export class UsersService {
     }
 
 }
+
+export const usersService = new UsersService()
