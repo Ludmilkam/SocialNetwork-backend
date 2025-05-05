@@ -1,18 +1,21 @@
 import { Request, Response } from "express";
 import {
     HTTPConflictError,
+    HTTPForbiddenError,
     HTTPNotFoundError,
     HTTPUnauthorizedError,
 } from "../core/http-errors";
 import { validateObjectId, validateRequest } from "../core/validation";
 import {
     InvalidCredentialsError,
+    OtpGenerationForbidden,
     UserAlreadyExistsError,
     usersService,
     UsersService,
 } from "./services";
 import {
     createUserSchema,
+    sendOTPSchema,
     signInSchema,
     signUpSchema,
 } from "./schemas";
@@ -92,5 +95,19 @@ export class UsersHandlers {
             throw err;
         }
     };
+    // 1. фронт отправляет запрос с имеилом юзера для отправки токена на его почту
+    // 2. фронт отправляет запрос на регистрацию с данными пользователя + токен который юзер ввел
+    public sendOTP = async (req: Request, res: Response) => {
+        const body = validateRequest(req, sendOTPSchema)
+        try {
+            await this.service.sendOTP(body.email)
+        } catch (err) {
+            if (err instanceof OtpGenerationForbidden) {
+                throw new HTTPForbiddenError("You can't create otp if you already registered")
+            }
+            throw err
+        }
+        res.status(204)
+    }
 
 }

@@ -7,19 +7,39 @@ import {
     User,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
-import { UsersRepository } from "./repositories";
+import { OtpEmailRepository, UsersRepository } from "./repositories";
 import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { StringValue } from "ms";
+import { generate } from "otp-generator";
+import { sendMail } from "../core/mailing";
 
 export class InvalidCredentialsError extends Error {
     constructor() {
         super("Invalid credentials!");
     }
 }
+
+export class OtpNotFoundError extends Error {
+    constructor() {
+        super("Otp not found")
+    }
+}
+export class OtpExpiredError extends Error {
+    constructor() {
+        super("Otp expired")
+    }
+}
+
 export class UserAlreadyExistsError extends Error {
     constructor() {
         super("User with that email already exists");
+    }
+}
+
+export class OtpGenerationForbidden extends Error {
+    constructor() {
+        super("You cant generate otp token if you have already registered");
     }
 }
 
@@ -31,10 +51,12 @@ export class UserNotFoundError extends Error {
 
 export class UsersService {
     private usersRepo: UsersRepository;
+    private otpRepo: OtpEmailRepository;
     private hashSalt: number;
 
     constructor() {
         this.usersRepo = new UsersRepository();
+        this.otpRepo = new OtpEmailRepository()
         this.hashSalt = 10;
     }
 
@@ -85,6 +107,18 @@ export class UsersService {
     async signUp(
         data: signUpInput,
     ): Promise<{ user: ShowUser; token: string }> {
+        try {
+            var otpWithEmail = await this.otpRepo.findByCodeAndEmail(data.otp, data.email)
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new OtpNotFoundError()
+            }
+            throw err
+        }
+        if (otpWithEmail.expiresAt < new Date()) {
+            throw new OtpExpiredError()
+        }
+        await this.otpRepo.deleteAllForEmail(data.email)
         const user = await this.createUser(data);
         const token = sign({ userId: user.id }, process.env.JWT_SECRET!, {
             expiresIn: process.env.JWT_TTL as StringValue,
@@ -108,6 +142,26 @@ export class UsersService {
     async listUsers(): Promise<ShowUser[]> {
         const users = await this.usersRepo.list();
         return users.map((user) => ({ ...user, password: undefined }));
+    }
+
+    async sendOTP(email: string) {
+        try {
+            const user = await this.usersRepo.findByEmail(email)
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new OtpGenerationForbidden()
+            }
+            throw err
+        }
+        const otp = generate(8) // generate random token with length 8 characters
+        const expiresAt = new Date()
+        expiresAt.setMinutes(expiresAt.getMinutes() + 5)
+        await this.otpRepo.create({ otp, email, expiresAt })
+        await sendMail(
+            email, `Hi dear user.
+            Here is your otp which you can use to confirm your email and continue
+            in registration.\n${otp}`
+        )
     }
 
 }

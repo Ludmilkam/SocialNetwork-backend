@@ -1,7 +1,7 @@
 import { User } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma";
 
 export class UsersRepository {
     async findUnique(where: Prisma.UserWhereUniqueInput) {
@@ -39,4 +39,24 @@ export class UsersRepository {
     }
 
 
+}
+
+export class OtpEmailRepository {
+    async create(data: Prisma.OtpEmailCreateInput) {
+        await prisma.otpEmail.create({ data })
+    }
+    async findByCodeAndEmail(code: string, email: string) {
+        try {
+            return await prisma.otpEmail.findUniqueOrThrow({ where: { otp: code, email } })
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
+    }
+
+    async deleteAllForEmail(email: string) {
+        await prisma.otpEmail.deleteMany({ where: { email } })
+    }
 }
