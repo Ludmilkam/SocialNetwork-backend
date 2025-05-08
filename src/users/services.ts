@@ -2,7 +2,7 @@ import {
     AuthTokenPayload,
     createUserInput,
     ShowUser,
-    signInInput,
+     signInInput, 
     signUpInput,
     User,
 } from "./types";
@@ -22,7 +22,6 @@ export class UserAlreadyExistsError extends Error {
         super("User with that email already exists");
     }
 }
-
 export class UserNotFoundError extends Error {
     constructor(findOption: string) {
         super(`User with ${findOption} wasn't found`);
