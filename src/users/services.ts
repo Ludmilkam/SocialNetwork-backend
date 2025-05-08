@@ -2,7 +2,7 @@ import {
     AuthTokenPayload,
     createUserInput,
     ShowUser,
-    signInInput,
+     signInInput, 
     signUpInput,
     User,
 } from "./types";
@@ -36,6 +36,8 @@ export class UserAlreadyExistsError extends Error {
         super("User with that email already exists");
     }
 }
+<<<<<<< HEAD
+=======
 
 export class OtpGenerationForbidden extends Error {
     constructor() {
@@ -43,6 +45,7 @@ export class OtpGenerationForbidden extends Error {
     }
 }
 
+>>>>>>> 9178c77ed7d59aa45b299e47afc8e6f6bafe4f5e
 export class UserNotFoundError extends Error {
     constructor(findOption: string) {
         super(`User with ${findOption} wasn't found`);
