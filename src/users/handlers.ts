@@ -1,17 +1,21 @@
 import { Request, Response } from "express";
 import {
     HTTPConflictError,
+    HTTPForbiddenError,
     HTTPNotFoundError,
     HTTPUnauthorizedError,
 } from "../core/http-errors";
 import { validateObjectId, validateRequest } from "../core/validation";
 import {
     InvalidCredentialsError,
+    OtpGenerationForbidden,
     UserAlreadyExistsError,
-    UserNotFoundError,
+    usersService,
     UsersService,
 } from "./services";
 import {
+    createUserSchema,
+    sendOTPSchema,
     signInSchema,
     signUpSchema,
 } from "./schemas";
@@ -19,8 +23,9 @@ import { getSuccededResponse } from "../core/utils";
 import { requireAdmin, requireAuthorized } from "./utils";
 
 export class UsersHandlers {
-    constructor(public service: UsersService) {
-        this.service = service;
+    public service: UsersService;
+    constructor() {
+        this.service = usersService;
     }
 
     public signUp = async (req: Request, res: Response) => {
@@ -76,5 +81,33 @@ export class UsersHandlers {
             throw err;
         }
     };
+
+    public createUser = async (req: Request, res: Response): Promise<void> => {
+        requireAdmin(res);
+        const body = validateRequest(req, createUserSchema);
+        try {
+            const user = await this.service.createUser(body);
+            res.status(200).json(getSuccededResponse(user));
+        } catch (err) {
+            if (err instanceof UserAlreadyExistsError) {
+                throw new HTTPConflictError(err.message);
+            }
+            throw err;
+        }
+    };
+    // 1. фронт отправляет запрос с имеилом юзера для отправки токена на его почту
+    // 2. фронт отправляет запрос на регистрацию с данными пользователя + токен который юзер ввел
+    public sendOTP = async (req: Request, res: Response) => {
+        const body = validateRequest(req, sendOTPSchema)
+        try {
+            await this.service.sendOTP(body.email)
+        } catch (err) {
+            if (err instanceof OtpGenerationForbidden) {
+                throw new HTTPForbiddenError("You can't create otp if you already registered")
+            }
+            throw err
+        }
+        res.status(204)
+    }
 
 }
