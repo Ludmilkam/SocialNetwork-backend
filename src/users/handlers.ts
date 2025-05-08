@@ -107,7 +107,7 @@ export class UsersHandlers {
             }
             throw err
         }
-        res.status(204)
+        res.status(204).send()
     }
 
 }

@@ -9,7 +9,12 @@ export const signInSchema = z.object({
 
 export const signUpSchema = signInSchema.extend({
     username: z.string().min(4, "username must contain at least 4 characters"),
-    otp: z.string().min(6)
+    phoneNumber: z.string().min(5),
+    aboutMe: z.string().optional(),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    otp: z.string().min(6),
+    avatarUrl: z.string().optional(),
 });
 
 export const sendOTPSchema = z.object({

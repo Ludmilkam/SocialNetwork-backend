@@ -12,9 +12,12 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendMail(to: string, subject: string, body: string) {
+  console.log("Start sending mail")
   await transporter.sendMail({
+    from: "maildjango12@gmail.com",
     to,
     subject,
     text: body
   })
+  console.log("Mail succesfully sent to", to)
 }

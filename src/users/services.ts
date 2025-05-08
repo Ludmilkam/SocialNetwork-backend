@@ -2,7 +2,7 @@ import {
     AuthTokenPayload,
     createUserInput,
     ShowUser,
-     signInInput, 
+    signInInput,
     signUpInput,
     User,
 } from "./types";
@@ -36,8 +36,6 @@ export class UserAlreadyExistsError extends Error {
         super("User with that email already exists");
     }
 }
-<<<<<<< HEAD
-=======
 
 export class OtpGenerationForbidden extends Error {
     constructor() {
@@ -45,7 +43,6 @@ export class OtpGenerationForbidden extends Error {
     }
 }
 
->>>>>>> 9178c77ed7d59aa45b299e47afc8e6f6bafe4f5e
 export class UserNotFoundError extends Error {
     constructor(findOption: string) {
         super(`User with ${findOption} wasn't found`);
@@ -122,7 +119,8 @@ export class UsersService {
             throw new OtpExpiredError()
         }
         await this.otpRepo.deleteAllForEmail(data.email)
-        const user = await this.createUser(data);
+        const userData = { ...data, otp: undefined }
+        const user = await this.createUser(userData as unknown as createUserInput);
         const token = sign({ userId: user.id }, process.env.JWT_SECRET!, {
             expiresIn: process.env.JWT_TTL as StringValue,
         });
@@ -148,13 +146,16 @@ export class UsersService {
     }
 
     async sendOTP(email: string) {
+        let user;
         try {
-            const user = await this.usersRepo.findByEmail(email)
+            user = await this.usersRepo.findByEmail(email)
         } catch (err) {
-            if (err instanceof NotFoundError) {
-                throw new OtpGenerationForbidden()
+            if (!(err instanceof NotFoundError)) {
+                throw err
             }
-            throw err
+        }
+        if (user) {
+            throw new OtpGenerationForbidden()
         }
         const otp = generate(8) // generate random token with length 8 characters
         const expiresAt = new Date()
