@@ -158,7 +158,7 @@ export class UsersService {
         expiresAt.setMinutes(expiresAt.getMinutes() + 5)
         await this.otpRepo.create({ otp, email, expiresAt })
         await sendMail(
-            email, `Hi dear user.
+            email, "Email confirmation", `Hi dear user.
             Here is your otp which you can use to confirm your email and continue
             in registration.\n${otp}`
         )
