@@ -34,9 +34,7 @@
     "format": "npx prettier src/ --write",
     "dev": "node -r ts-node/register --env-file=.env src/server.ts"
   },
-  "prisma": {
-      "schema": "./prisma"
-  },
+  
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/cors": "^2.8.17",
