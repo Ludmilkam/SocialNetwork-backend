@@ -1,3 +1,5 @@
+src/generated
+db.sqlite
 # Logs
 logs
 *.log

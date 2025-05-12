@@ -1,14 +1,16 @@
 import { Router } from "express";
-import { container } from "./container";
+import { UsersHandlers } from "./handlers";
 
 const router = Router();
 
-router.post("/signup", container.handlers.signUp);
-router.post("/signin", container.handlers.signIn);
-router.get("/me", container.handlers.getUser);
-router.get("/:id", container.handlers.getUser);
+const handlers = new UsersHandlers()
 
-router.get("/admin/list-users", container.handlers.listUsers);
-router.post("/admin/create", container.handlers.createUser);
+router.post("/signup", handlers.signUp);
+router.post("/signin", handlers.signIn);
+router.get("/me", handlers.getUser);
+router.post("/send-otp", handlers.sendOTP)
+
+router.get("/admin/list-users", handlers.listUsers);
+router.post("/admin/create", handlers.createUser);
 
 export default router;

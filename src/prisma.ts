@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { PrismaClient } from "./generated/prisma";
+import { PrismaClientKnownRequestError } from "./generated/prisma/runtime/library";
 
 export const prisma = new PrismaClient();
 export const getErrorCode = (err: unknown) =>
