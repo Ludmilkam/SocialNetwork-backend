@@ -13,6 +13,8 @@ import { sign } from "jsonwebtoken";
 import { StringValue } from "ms";
 import { generate } from "otp-generator";
 import { sendMail } from "../core/mailing";
+import { Config } from "../core/config";
+import ms from "ms"
 
 export class InvalidCredentialsError extends Error {
     constructor() {
@@ -157,9 +159,10 @@ export class UsersService {
         if (user) {
             throw new OtpGenerationForbidden()
         }
-        const otp = generate(8) // generate random token with length 8 characters
+        const otp = generate(Config.OTP_LENGTH)
         const expiresAt = new Date()
-        expiresAt.setMinutes(expiresAt.getMinutes() + 5)
+        const ONE_MIN_MS = 60000
+        expiresAt.setMinutes(expiresAt.getMinutes() + ms(Config.OTP_TTL) / ONE_MIN_MS)
         await this.otpRepo.create({ otp, email, expiresAt })
         await sendMail(
             email, "Email confirmation", `Hi dear user.
