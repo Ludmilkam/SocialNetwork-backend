@@ -1,0 +1,18 @@
+
+model Post {
+  id          Int      @id @default(autoincrement())
+  link String?
+  title String
+  subject String
+  tags Tag[]
+  body String
+  media Media[]
+  viewedBy User[]  @relation("UserPostViews")
+  likedBy User[] @relation("UserPostLikes")
+}
+
+model Tag {
+  id Int @id @default(autoincrement())
+  name String
+  posts Post[]
+}
