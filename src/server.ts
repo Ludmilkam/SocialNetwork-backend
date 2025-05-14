@@ -7,7 +7,7 @@ import { usersMiddlewares } from "./users/middlewares";
 export const apiVersion = "1.0.0";
 const app: express.Express = express();
 
-const HOST = "127.0.0.1";
+const HOST = "192.168.77.163";
 const PORT = Number(process.env.PORT) || 8000;
 
 app.use(express.json());
