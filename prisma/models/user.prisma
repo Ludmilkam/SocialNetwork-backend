@@ -17,6 +17,7 @@ model User {
   password    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  createdPosts Post[]
   viewedPosts Post[] @relation("UserPostViews")
   likedPosts Post[] @relation("UserPostLikes")
 }

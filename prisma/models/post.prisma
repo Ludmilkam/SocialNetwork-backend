@@ -7,6 +7,8 @@ model Post {
   tags Tag[]
   body String
   media Media[]
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int 
   viewedBy User[]  @relation("UserPostViews")
   likedBy User[] @relation("UserPostLikes")
 }
