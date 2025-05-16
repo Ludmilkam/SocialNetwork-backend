@@ -1,3 +1,4 @@
+import { hash } from 'bcryptjs';
 import { PrismaClient, MediaType } from './generated/prisma';
 import { faker } from '@faker-js/faker';
 
@@ -16,7 +17,7 @@ async function main() {
 
   // Создание пользователей
   const users = await Promise.all(
-    Array.from({ length: 10 }).map(() =>
+    Array.from({ length: 10 }).map(async () =>
       prisma.user.create({
         data: {
           username: faker.internet.username(),
@@ -26,7 +27,7 @@ async function main() {
           lastName: faker.person.lastName(),
           birthDate: faker.date.birthdate(),
           avatarUrl: faker.image.avatar(),
-          password: faker.internet.password(),
+          password: await hash("123456789",10)
         },
       })
     )

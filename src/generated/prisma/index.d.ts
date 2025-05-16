@@ -50,24 +50,11 @@ export namespace $Enums {
 
 export type MediaType = (typeof MediaType)[keyof typeof MediaType]
 
-
-export const Role: {
-  USER: 'USER',
-  ADMIN: 'ADMIN',
-  MODERATOR: 'MODERATOR'
-};
-
-export type Role = (typeof Role)[keyof typeof Role]
-
 }
 
 export type MediaType = $Enums.MediaType
 
 export const MediaType: typeof $Enums.MediaType
-
-export type Role = $Enums.Role
-
-export const Role: typeof $Enums.Role
 
 /**
  * ##  Prisma Client ʲˢ

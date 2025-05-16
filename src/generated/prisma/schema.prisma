@@ -36,12 +36,6 @@ model Tag {
   posts Post[]
 }
 
-enum Role {
-  USER
-  ADMIN
-  MODERATOR
-}
-
 model User {
   id           Int       @id @default(autoincrement())
   username     String?
