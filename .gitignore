@@ -1,5 +1,5 @@
 src/generated
-db.sqlite
+db.sqlite*
 # Logs
 logs
 *.log
