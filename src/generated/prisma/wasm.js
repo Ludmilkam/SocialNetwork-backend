@@ -117,10 +117,30 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.MediaScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  url: 'url'
+};
+
 exports.Prisma.OtpEmailScalarFieldEnum = {
   otp: 'otp',
   email: 'email',
   expiresAt: 'expiresAt'
+};
+
+exports.Prisma.PostScalarFieldEnum = {
+  id: 'id',
+  link: 'link',
+  title: 'title',
+  subject: 'subject',
+  body: 'body',
+  authorId: 'authorId'
+};
+
+exports.Prisma.TagScalarFieldEnum = {
+  id: 'id',
+  name: 'name'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -147,10 +167,16 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
-
+exports.MediaType = exports.$Enums.MediaType = {
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO'
+};
 
 exports.Prisma.ModelName = {
+  Media: 'Media',
   OtpEmail: 'OtpEmail',
+  Post: 'Post',
+  Tag: 'Tag',
   User: 'User'
 };
 

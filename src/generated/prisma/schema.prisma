@@ -1,7 +1,39 @@
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model Media {
+  id    Int       @id @default(autoincrement())
+  type  MediaType @default(IMAGE)
+  url   String
+  posts Post[]
+}
+
 model OtpEmail {
   otp       String   @id
   email     String
   expiresAt DateTime
+}
+
+model Post {
+  id       Int     @id @default(autoincrement())
+  link     String?
+  title    String
+  subject  String
+  tags     Tag[]
+  body     String
+  media    Media[]
+  author   User    @relation(fields: [authorId], references: [id])
+  authorId Int
+  viewedBy User[]  @relation("UserPostViews")
+  likedBy  User[]  @relation("UserPostLikes")
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String
+  posts Post[]
 }
 
 enum Role {
@@ -11,18 +43,21 @@ enum Role {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  username  String?
-  email     String    @unique
-  aboutMe   String?
-  firstName String?
-  lastName  String?
-  birthDate DateTime?
-  isOnline  Boolean   @default(true)
-  avatarUrl String?
-  password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           Int       @id @default(autoincrement())
+  username     String?
+  email        String    @unique
+  aboutMe      String?
+  firstName    String?
+  lastName     String?
+  birthDate    DateTime?
+  isOnline     Boolean   @default(true)
+  avatarUrl    String?
+  password     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdPosts Post[]
+  viewedPosts  Post[]    @relation("UserPostViews")
+  likedPosts   Post[]    @relation("UserPostLikes")
 }
 
 generator client {
