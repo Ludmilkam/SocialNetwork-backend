@@ -2,6 +2,7 @@ import {
     AuthTokenPayload,
     createUserInput,
     ShowUser,
+    ShowUserWithRelations,
     signInInput,
     signUpInput,
     User,
@@ -130,9 +131,9 @@ export class UsersService {
         return { user, token: token };
     }
 
-    async getUser(userId: number): Promise<ShowUser> {
+    async getUser(userId: number): Promise<ShowUserWithRelations> {
         try {
-            const user = await this.usersRepo.findById(userId);
+            const user = await this.usersRepo.getByIdWithPosts(userId);
             return { ...user, password: undefined };
         } catch (err) {
             if (err instanceof NotFoundError) {

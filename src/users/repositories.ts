@@ -4,9 +4,9 @@ import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { Prisma } from "../generated/prisma";
 
 export class UsersRepository {
-    async findUnique(where: Prisma.UserWhereUniqueInput) {
+    async findUnique(where: Prisma.UserWhereUniqueInput, options: Prisma.UserDefaultArgs = {}) {
         try {
-            return await prisma.user.findUniqueOrThrow({ where });
+            return await prisma.user.findUniqueOrThrow({ where, ...options });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();
@@ -18,8 +18,23 @@ export class UsersRepository {
         return await this.findUnique({ email });
     }
 
-    async findById(id: number): Promise<User> {
-        return await this.findUnique({ id });
+    async getByIdWithPosts(id: number): Promise<User<{ include: { createdPosts: true } }>> {
+        try {
+            return await prisma.user.findUniqueOrThrow({
+                where: { id }, include: {
+                    createdPosts: {
+                        include: {
+                            tags: true, media: true, _count: { select: { likedBy: true, viewedBy: true } }
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
     }
     async list(): Promise<User[]> {
         return await prisma.user.findMany();
