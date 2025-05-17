@@ -5,6 +5,6 @@ import postsRouter from "../posts/router";
 const router = express.Router();
 
 router.use("/users", usersRouter);
-router.use("/posts", postsRouter)
+router.use("/posts", postsRouter);
 
 export default router;

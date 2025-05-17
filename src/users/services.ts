@@ -4,6 +4,7 @@ import {
     ShowUser,
     signInInput,
     signUpInput,
+    updateUserInput,
     User,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
@@ -13,8 +14,6 @@ import { sign } from "jsonwebtoken";
 import { StringValue } from "ms";
 import { generate } from "otp-generator";
 import { sendMail } from "../core/mailing";
-import { Config } from "../core/config";
-import ms from "ms"
 
 export class InvalidCredentialsError extends Error {
     constructor() {
@@ -142,6 +141,9 @@ export class UsersService {
         }
     }
 
+    async updateUser(data: updateUserInput, userId: number): Promise<User> {
+        return await this.usersRepo.updateById(userId, data);
+    }
     async listUsers(): Promise<ShowUser[]> {
         const users = await this.usersRepo.list();
         return users.map((user) => ({ ...user, password: undefined }));
@@ -159,10 +161,9 @@ export class UsersService {
         if (user) {
             throw new OtpGenerationForbidden()
         }
-        const otp = generate(Config.OTP_LENGTH)
+        const otp = generate(8) // generate random token with length 8 characters
         const expiresAt = new Date()
-        const ONE_MIN_MS = 60000
-        expiresAt.setMinutes(expiresAt.getMinutes() + ms(Config.OTP_TTL) / ONE_MIN_MS)
+        expiresAt.setMinutes(expiresAt.getMinutes() + 5)
         await this.otpRepo.create({ otp, email, expiresAt })
         await sendMail(
             email, "Email confirmation", `Hi dear user.
