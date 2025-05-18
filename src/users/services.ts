@@ -23,9 +23,9 @@ export class InvalidCredentialsError extends Error {
     }
 }
 
-export class OtpNotFoundError extends Error {
+export class InvalidOtpError extends Error {
     constructor() {
-        super("Otp not found")
+        super("Invalid otp code")
     }
 }
 export class OtpExpiredError extends Error {
@@ -114,7 +114,7 @@ export class UsersService {
             var otpWithEmail = await this.otpRepo.findByCodeAndEmail(data.otp, data.email)
         } catch (err) {
             if (err instanceof NotFoundError) {
-                throw new OtpNotFoundError()
+                throw new InvalidOtpError()
             }
             throw err
         }
