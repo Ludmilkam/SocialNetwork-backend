@@ -8,11 +8,11 @@ export class PostsService {
         this.postsRepo = new PostsRepository();
     }
 
-    async createPost(postId: number, data: createPostInput) {
+    async createPost(userId: number, data: createPostInput) {
         try {
             const newPost = await this.postsRepo.create({
                 ...data,
-                user: { connect: { id: postId } },
+                author: { connect: { id: userId } },
             });
             return { ...newPost };
         } catch (err) {
@@ -21,7 +21,7 @@ export class PostsService {
     }
 
     async listPosts() {
-        const posts = await this.postsRepo.list();
+        const posts = await this.postsRepo.getAll();
         return posts.map((post) => ({ ...post, author: { ...post.author, password: undefined } }));
     }
 }

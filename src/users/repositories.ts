@@ -1,7 +1,7 @@
 import { User } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma";
 
 export class UsersRepository {
     async findUnique(where: Prisma.UserWhereUniqueInput, options: Prisma.UserDefaultArgs = {}) {
@@ -36,6 +36,9 @@ export class UsersRepository {
             throw err;
         }
     }
+    async list(): Promise<User[]> {
+        return await prisma.user.findMany();
+    }
 
     async create(data: Prisma.UserCreateInput): Promise<User> {
         try {
@@ -49,23 +52,26 @@ export class UsersRepository {
             throw err;
         }
     }
-    async updateById(id: number, data: Prisma.UserUpdateInput): Promise<User> {
-        const updatedUser = await prisma.user.update({
-            where: { id },
-            data,
-        });
-        return updatedUser;
+
+
+}
+
+export class OtpEmailRepository {
+    async create(data: Prisma.OtpEmailCreateInput) {
+        await prisma.otpEmail.create({ data })
     }
-    async list(): Promise<User[]> {
-        return await prisma.user.findMany();
-    }
-    async deleteById(userId: number): Promise<void> {
+    async findByCodeAndEmail(code: string, email: string) {
         try {
-            await prisma.user.delete({ where: { id: userId } });
+            return await prisma.otpEmail.findUniqueOrThrow({ where: { otp: code, email } })
         } catch (err) {
-            if (getErrorCode(err) == ErrorCodes.NotFound)
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();
+            }
             throw err;
         }
+    }
+
+    async deleteAllForEmail(email: string) {
+        await prisma.otpEmail.deleteMany({ where: { email } })
     }
 }
