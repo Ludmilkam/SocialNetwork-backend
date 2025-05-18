@@ -1,31 +1,28 @@
 import { Request, Response } from "express";
 import {
     HTTPConflictError,
-    HTTPForbiddenError,
     HTTPNotFoundError,
     HTTPUnauthorizedError,
 } from "../core/http-errors";
 import { validateObjectId, validateRequest } from "../core/validation";
 import {
     InvalidCredentialsError,
-    OtpGenerationForbidden,
     UserAlreadyExistsError,
-    usersService,
+    UserNotFoundError,
     UsersService,
 } from "./services";
 import {
     createUserSchema,
-    sendOTPSchema,
     signInSchema,
     signUpSchema,
+    updateUserSchema,
 } from "./schemas";
 import { getSuccededResponse } from "../core/utils";
 import { requireAdmin, requireAuthorized } from "./utils";
 
 export class UsersHandlers {
-    public service: UsersService;
-    constructor() {
-        this.service = usersService;
+    constructor(public service: UsersService) {
+        this.service = service;
     }
 
     public signUp = async (req: Request, res: Response) => {
@@ -95,19 +92,31 @@ export class UsersHandlers {
             throw err;
         }
     };
-    // 1. фронт отправляет запрос с имеилом юзера для отправки токена на его почту
-    // 2. фронт отправляет запрос на регистрацию с данными пользователя + токен который юзер ввел
-    public sendOTP = async (req: Request, res: Response) => {
-        const body = validateRequest(req, sendOTPSchema)
+    public updateUser = async (req: Request, res: Response): Promise<void> => {
+        const userId = validateObjectId(req.params.id);
+        const body = validateRequest(req, updateUserSchema);
         try {
-            await this.service.sendOTP(body.email)
+            const user = await this.service.updateUser(body, userId);
+            res.status(200).json(getSuccededResponse(user));
         } catch (err) {
-            if (err instanceof OtpGenerationForbidden) {
-                throw new HTTPForbiddenError("You can't create otp if you already registered")
+            if (err instanceof UserNotFoundError) {
+                throw new HTTPNotFoundError(err.message);
             }
-            throw err
+            if (err instanceof UserAlreadyExistsError)
+                throw new HTTPConflictError(err.message);
+            throw err;
         }
-        res.status(204).send()
-    }
-
+    };
+    public deleteUser = async (req: Request, res: Response): Promise<void> => {
+        requireAdmin(res);
+        const userId = validateObjectId(req.params.id);
+        try {
+            const user = await this.service.deleteUser(userId);
+            res.status(200).json(getSuccededResponse(user));
+        } catch (err) {
+            if (err instanceof UserNotFoundError)
+                throw new HTTPNotFoundError(err.message);
+            throw err;
+        }
+    };
 }

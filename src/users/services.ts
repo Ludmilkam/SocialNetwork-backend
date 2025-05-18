@@ -5,6 +5,7 @@ import {
     ShowUserWithRelations,
     signInInput,
     signUpInput,
+    updateUserInput,
     User,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
@@ -143,6 +144,9 @@ export class UsersService {
         }
     }
 
+    async updateUser(data: updateUserInput, userId: number): Promise<User> {
+        return await this.usersRepo.updateById(userId, data);
+    }
     async listUsers(): Promise<ShowUser[]> {
         const users = await this.usersRepo.list();
         return users.map((user) => ({ ...user, password: undefined }));
