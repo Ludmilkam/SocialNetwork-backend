@@ -8,7 +8,9 @@ import {
 import { validateObjectId, validateRequest } from "../core/validation";
 import {
     InvalidCredentialsError,
+    NotAllowed,
     OtpGenerationForbidden,
+    PostNotFoundError,
     UserAlreadyExistsError,
     usersService,
     UsersService,
@@ -95,6 +97,24 @@ export class UsersHandlers {
             throw err;
         }
     };
+
+    public deletePost = async (req: Request, res: Response): Promise<void> => {
+        requireAdmin(res);
+        const userId = validateObjectId(req.params.userId);
+        const postId = validateObjectId(req.params.postId)
+        try{
+            const post = await this.service.deletePost(userId, postId)
+            res.status(200).json(getSuccededResponse(post));
+        }catch(err){
+            if (err instanceof PostNotFoundError) {
+                throw new HTTPNotFoundError("Post not found")
+            } else if (err instanceof NotAllowed){
+                throw new HTTPForbiddenError("It`s not your post")
+            }
+            throw err;
+        }
+    }
+
     // 1. фронт отправляет запрос с имеилом юзера для отправки токена на его почту
     // 2. фронт отправляет запрос на регистрацию с данными пользователя + токен который юзер ввел
     public sendOTP = async (req: Request, res: Response) => {

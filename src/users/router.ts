@@ -9,6 +9,7 @@ router.post("/signup", handlers.signUp);
 router.post("/signin", handlers.signIn);
 router.get("/me", handlers.getUser);
 router.post("/send-otp", handlers.sendOTP)
+router.delete("/delete", handlers.deletePost)
 
 router.get("/admin/list-users", handlers.listUsers);
 router.post("/admin/create", handlers.createUser);
