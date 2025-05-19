@@ -1,6 +1,8 @@
+import path from "path";
 import { FailedResponse, SortOrder, SuccededResponse } from "./types";
+import multer from "multer"
 
-export const parseArray = <T>(
+export const parseArray = <T,>(
     arrLike: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     castCallback?: (el: any) => T, // eslint-disable-line @typescript-eslint/no-explicit-any
 ): T[] => {
@@ -17,7 +19,7 @@ export const getFailedResponse = (message: string): FailedResponse => ({
     message,
 });
 
-export const getSuccededResponse = <T>(data: T): SuccededResponse<T> => ({
+export const getSuccededResponse = <T,>(data: T): SuccededResponse<T> => ({
     success: true,
     data,
 });
@@ -36,3 +38,14 @@ export const getSortMapping = (
     });
     return res;
 };
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: function(_, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname))
+    }
+})
+
+export const upload = multer({ storage })

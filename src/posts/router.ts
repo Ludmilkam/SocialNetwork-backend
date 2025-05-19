@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { PostsHandlers } from "./handlers";
+import { upload } from "../core/utils";
 
 const router = Router()
 const handlers = new PostsHandlers()
 
 router.get("/", handlers.listPosts);
-router.post("/", handlers.createPost);
+router.post("/", upload.array("media", 6), handlers.createPost);
 
 export default router;

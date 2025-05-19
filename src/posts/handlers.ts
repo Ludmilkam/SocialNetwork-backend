@@ -16,10 +16,10 @@ export class PostsHandlers {
     };
 
     public createPost = async (req: Request, res: Response): Promise<void> => {
+        console.log(req.body, req.files)
         const userId = requireAuthorized(res);
         const body = validateRequest(req, createPostSchema);
         const post = await this.service.createPost(userId, body);
         res.status(200).json(getSuccededResponse(post))
-
     }
 }
