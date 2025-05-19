@@ -1,20 +1,17 @@
-enum Role {
-  USER
-  ADMIN
-  MODERATOR
-}
-
 model User {
   id          Int      @id @default(autoincrement())
-  username    String   @unique
+  username    String?
   email       String   @unique
-  phoneNumber String
   aboutMe     String?
-  firstName   String
-  lastName    String
+  firstName   String?
+  lastName    String?
+  birthDate   DateTime?
   isOnline    Boolean  @default(true)
   avatarUrl   String?
   password    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  createdPosts Post[]
+  viewedPosts Post[] @relation("UserPostViews")
+  likedPosts Post[] @relation("UserPostLikes")
 }

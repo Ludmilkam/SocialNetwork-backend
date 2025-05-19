@@ -1,14 +1,20 @@
-import { PostCreate } from "./types";
+import { Post } from "./types";
+import { Prisma } from "../generated/prisma";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError } from "../core/repository";
-import { Prisma } from "../generated/prisma";
-
 export class PostsRepository {
-    async list(): Promise<PostCreate[]> {
-        return await prisma.post.findMany();
+
+    async list(): Promise<Post[]> {
+        // return await prisma.post.findMany();
+        return await prisma.post.findMany({
+            include: {
+                tags: true, author: true, media: true, _count: { select: { likedBy: true, viewedBy: true } }
+            }
+        }
+        )
     }
 
-    async create(data: Prisma.PostCreateInput): Promise<PostCreate> {
+    async create(data: Prisma.PostCreateInput): Promise<Post> {
         try {
             return await prisma.post.create({
                 data,

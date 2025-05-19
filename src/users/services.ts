@@ -2,9 +2,9 @@ import {
     AuthTokenPayload,
     createUserInput,
     ShowUser,
+    ShowUserWithRelations,
     signInInput,
     signUpInput,
-    updateUserInput,
     User,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
@@ -14,6 +14,8 @@ import { sign } from "jsonwebtoken";
 import { StringValue } from "ms";
 import { generate } from "otp-generator";
 import { sendMail } from "../core/mailing";
+import { Config } from "../core/config";
+import ms from "ms"
 
 export class InvalidCredentialsError extends Error {
     constructor() {
@@ -21,9 +23,9 @@ export class InvalidCredentialsError extends Error {
     }
 }
 
-export class OtpNotFoundError extends Error {
+export class InvalidOtpError extends Error {
     constructor() {
-        super("Otp not found")
+        super("Invalid otp code")
     }
 }
 export class OtpExpiredError extends Error {
@@ -112,7 +114,7 @@ export class UsersService {
             var otpWithEmail = await this.otpRepo.findByCodeAndEmail(data.otp, data.email)
         } catch (err) {
             if (err instanceof NotFoundError) {
-                throw new OtpNotFoundError()
+                throw new InvalidOtpError()
             }
             throw err
         }
@@ -129,9 +131,9 @@ export class UsersService {
         return { user, token: token };
     }
 
-    async getUser(userId: number): Promise<ShowUser> {
+    async getUser(userId: number): Promise<ShowUserWithRelations> {
         try {
-            const user = await this.usersRepo.findById(userId);
+            const user = await this.usersRepo.getByIdWithPosts(userId);
             return { ...user, password: undefined };
         } catch (err) {
             if (err instanceof NotFoundError) {
@@ -141,9 +143,6 @@ export class UsersService {
         }
     }
 
-    async updateUser(data: updateUserInput, userId: number): Promise<User> {
-        return await this.usersRepo.updateById(userId, data);
-    }
     async listUsers(): Promise<ShowUser[]> {
         const users = await this.usersRepo.list();
         return users.map((user) => ({ ...user, password: undefined }));
@@ -161,9 +160,10 @@ export class UsersService {
         if (user) {
             throw new OtpGenerationForbidden()
         }
-        const otp = generate(8) // generate random token with length 8 characters
+        const otp = generate(Config.OTP_LENGTH)
         const expiresAt = new Date()
-        expiresAt.setMinutes(expiresAt.getMinutes() + 5)
+        const ONE_MIN_MS = 60000
+        expiresAt.setMinutes(expiresAt.getMinutes() + ms(Config.OTP_TTL) / ONE_MIN_MS)
         await this.otpRepo.create({ otp, email, expiresAt })
         await sendMail(
             email, "Email confirmation", `Hi dear user.

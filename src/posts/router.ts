@@ -4,7 +4,7 @@ import { PostsHandlers } from "./handlers";
 const router = Router()
 const handlers = new PostsHandlers()
 
-router.get("/", handlers.listPosts);
-router.post("/", handlers.createPost); 
+router.get("/listPosts", handlers.listPosts);
+router.post("/createPost", handlers.createPost);
 
 export default router;

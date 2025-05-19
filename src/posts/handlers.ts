@@ -12,7 +12,7 @@ export class PostsHandlers {
     }
     public listPosts = async (req: Request, res: Response) => {
         const posts = await this.service.listPosts();
-        res.status(200).json(posts)
+        res.status(200).json(getSuccededResponse(posts))
     };
 
     public createPost = async (req: Request, res: Response): Promise<void> => {

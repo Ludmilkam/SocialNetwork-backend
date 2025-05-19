@@ -1,12 +1,12 @@
 import { User } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../generated/prisma";
 
 export class UsersRepository {
-    async findUnique(where: Prisma.UserWhereUniqueInput) {
+    async findUnique(where: Prisma.UserWhereUniqueInput, options: Prisma.UserDefaultArgs = {}) {
         try {
-            return await prisma.user.findUniqueOrThrow({ where });
+            return await prisma.user.findUniqueOrThrow({ where, ...options });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();
@@ -18,8 +18,26 @@ export class UsersRepository {
         return await this.findUnique({ email });
     }
 
-    async findById(id: number): Promise<User> {
-        return await this.findUnique({ id });
+    async getByIdWithPosts(id: number): Promise<User<{ include: { createdPosts: true } }>> {
+        try {
+            return await prisma.user.findUniqueOrThrow({
+                where: { id }, include: {
+                    createdPosts: {
+                        include: {
+                            tags: true, media: true, _count: { select: { likedBy: true, viewedBy: true } }
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
+    }
+    async list(): Promise<User[]> {
+        return await prisma.user.findMany();
     }
 
     async create(data: Prisma.UserCreateInput): Promise<User> {
@@ -34,36 +52,26 @@ export class UsersRepository {
             throw err;
         }
     }
-    async listFavoriteMovies(userId: number) {
+
+
+}
+
+export class OtpEmailRepository {
+    async create(data: Prisma.OtpEmailCreateInput) {
+        await prisma.otpEmail.create({ data })
+    }
+    async findByCodeAndEmail(code: string, email: string) {
         try {
-            const res = await prisma.user.findUniqueOrThrow({
-                where: { id: userId },
-                select: { favouriteMovies: true },
-            });
-            return res.favouriteMovies;
+            return await prisma.otpEmail.findUniqueOrThrow({ where: { otp: code, email } })
         } catch (err) {
-            if (getErrorCode(err) == ErrorCodes.NotFound)
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();
+            }
             throw err;
         }
     }
-    async updateById(id: number, data: Prisma.UserUpdateInput): Promise<User> {
-        const updatedUser = await prisma.user.update({
-            where: { id },
-            data,
-        });
-        return updatedUser;
-    }
-    async list(): Promise<User[]> {
-        return await prisma.user.findMany();
-    }
-    async deleteById(userId: number): Promise<void> {
-        try {
-            await prisma.user.delete({ where: { id: userId } });
-        } catch (err) {
-            if (getErrorCode(err) == ErrorCodes.NotFound)
-                throw new NotFoundError();
-            throw err;
-        }
+
+    async deleteAllForEmail(email: string) {
+        await prisma.otpEmail.deleteMany({ where: { email } })
     }
 }

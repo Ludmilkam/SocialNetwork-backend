@@ -1,0 +1,11 @@
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model Media {
+  id          Int      @id @default(autoincrement())
+  type        MediaType @default(IMAGE)
+  url         String
+  posts       Post[]
+}
