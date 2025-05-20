@@ -4,6 +4,8 @@ import { getSuccededResponse } from "../core/utils";
 import { requireAuthorized } from "../users/utils";
 import { createPostSchema } from "./schemas";
 import { PostsService, postsService } from "./services";
+import { Config } from "../core/config";
+import { MediaType } from "../generated/prisma";
 
 export class PostsHandlers {
     public service: PostsService;
@@ -19,7 +21,13 @@ export class PostsHandlers {
         console.log(req.body, req.files)
         const userId = requireAuthorized(res);
         const body = validateRequest(req, createPostSchema);
-        const post = await this.service.createPost(userId, body);
+        const media = (req.files ?
+            (req.files as Express.Multer.File[]).map(item => ({ url: Config.MEDIA_SERVE_URL || `http://${Config.SERVER_HOST}:${Config.SERVER_PORT}/${item.filename}`, type: MediaType.IMAGE }))
+            : [])
+        const post = await this.service.createPost(userId, {
+            ...body,
+            media
+        });
         res.status(200).json(getSuccededResponse(post))
     }
 }

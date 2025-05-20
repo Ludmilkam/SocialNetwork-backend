@@ -3,12 +3,10 @@ import cors from "cors";
 import router from "./core/router";
 import { errorHandler } from "./core/http-errors";
 import { usersMiddlewares } from "./users/middlewares";
+import { Config } from "./core/config";
 
 export const apiVersion = "1.0.0";
 const app: express.Express = express();
-
-const HOST = "0.0.0.0";
-const PORT = Number(process.env.PORT) || 8000;
 
 app.use(
     cors({
@@ -22,6 +20,6 @@ app.use(usersMiddlewares.authenticate);
 
 app.use("/api/v1", router);
 app.use(errorHandler);
-app.listen(PORT, HOST, () => {
-    console.log(`Server is running on http://${HOST}:${PORT}`);
+app.listen(Config.SERVER_PORT, Config.SERVER_HOST, () => {
+    console.log(`Server is running on http://${Config.SERVER_HOST}:${Config.SERVER_PORT}`);
 });

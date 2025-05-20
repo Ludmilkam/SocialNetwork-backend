@@ -1,4 +1,4 @@
-import { createPostInput } from "./types";
+import { CreatePostInput } from "./types";
 import { PostsRepository } from "./repositories";
 
 export class PostsService {
@@ -8,11 +8,12 @@ export class PostsService {
         this.postsRepo = new PostsRepository();
     }
 
-    async createPost(userId: number, data: createPostInput) {
+    async createPost(userId: number, data: CreatePostInput) {
         try {
             const newPost = await this.postsRepo.create({
                 ...data,
                 author: { connect: { id: userId } },
+                media: { create: data.media }
             });
             return { ...newPost };
         } catch (err) {
