@@ -1,6 +1,6 @@
 import { Post } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
-import { AlreadyExistsError } from "../core/repository";
+import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { Prisma } from "../generated/prisma";
 
 export class PostsRepository {
@@ -13,6 +13,18 @@ export class PostsRepository {
         )
     }
 
+    async deletePostForUserById(authorId: number, postId: number): Promise<void> {
+        try {
+            await prisma.post.delete({
+                where: { id: postId, authorId },
+            });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
+    }
     async create(data: Prisma.PostCreateInput): Promise<Post> {
         try {
             return await prisma.post.create({
@@ -26,3 +38,4 @@ export class PostsRepository {
         }
     }
 }
+

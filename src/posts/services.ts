@@ -1,5 +1,12 @@
 import { CreatePostInput } from "./types";
 import { PostsRepository } from "./repositories";
+import { NotFoundError } from "../core/repository";
+
+export class PostNotFoundError extends Error {
+    constructor() {
+        super("Post not found");
+    }
+}
 
 export class PostsService {
     private postsRepo: PostsRepository;
@@ -20,7 +27,16 @@ export class PostsService {
             throw err;
         }
     }
-
+    async deletePostForUser(userId: number, postId: number): Promise<void> {
+        try {
+            await this.postsRepo.deletePostForUserById(userId, postId);
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new PostNotFoundError();
+            }
+            throw err;
+        }
+    }
     async listPosts() {
         const posts = await this.postsRepo.getAll();
         return posts.map((post) => ({ ...post, author: { ...post.author, password: undefined } }));
