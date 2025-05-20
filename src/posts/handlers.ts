@@ -18,7 +18,6 @@ export class PostsHandlers {
     };
 
     public createPost = async (req: Request, res: Response): Promise<void> => {
-        console.log(req.body, req.files)
         const userId = requireAuthorized(res);
         const body = validateRequest(req, createPostSchema);
         const media = (req.files ?

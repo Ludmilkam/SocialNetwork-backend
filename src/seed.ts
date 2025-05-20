@@ -14,6 +14,7 @@ async function main() {
       })
     )
   );
+  const fakeSigUrl = "https://i.postimg.cc/Y9hXr68H/2e45ce67c76ede75ba73053a7a6cb14863dc3380.png"
 
   // Создание пользователей
   const users = await Promise.all(
@@ -22,12 +23,13 @@ async function main() {
         data: {
           username: faker.internet.username(),
           email: faker.internet.email(),
+          signatureUrl: Math.random() < 0.5 ? fakeSigUrl : undefined,
           aboutMe: faker.lorem.sentence(),
           firstName: faker.person.firstName(),
           lastName: faker.person.lastName(),
           birthDate: faker.date.birthdate(),
           avatarUrl: faker.image.avatar(),
-          password: await hash("123456789",10)
+          password: await hash("123456789", 10)
         },
       })
     )
