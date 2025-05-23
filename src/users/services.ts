@@ -1,10 +1,11 @@
 import {
-  AuthTokenPayload,
-  createUserInput,
-  ShowUser,
-  signInInput,
-  signUpInput,
-  User,
+    AuthTokenPayload,
+    createUserInput,
+    ShowUser,
+    ShowUserWithRelations,
+    signInInput,
+    signUpInput,
+    User,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { OtpEmailRepository, UsersRepository } from "./repositories";
@@ -22,10 +23,10 @@ export class InvalidCredentialsError extends Error {
   }
 }
 
-export class OtpNotFoundError extends Error {
-  constructor() {
-    super("Otp not found");
-  }
+export class InvalidOtpError extends Error {
+    constructor() {
+        super("Invalid otp code")
+    }
 }
 export class OtpExpiredError extends Error {
   constructor() {
@@ -118,42 +119,41 @@ export class UsersService {
     }
   }
 
-  async signUp(data: signUpInput): Promise<{ user: ShowUser; token: string }> {
-    try {
-      var otpWithEmail = await this.otpRepo.findByCodeAndEmail(
-        data.otp,
-        data.email,
-      );
-    } catch (err) {
-      if (err instanceof NotFoundError) {
-        throw new OtpNotFoundError();
-      }
-      throw err;
-    }
-    if (otpWithEmail.expiresAt < new Date()) {
-      throw new OtpExpiredError();
-    }
-    await this.otpRepo.deleteAllForEmail(data.email);
-    const userData = { ...data, otp: undefined };
-    const user = await this.createUser(userData as unknown as createUserInput);
-    const token = sign({ userId: user.id }, process.env.JWT_SECRET!, {
-      expiresIn: process.env.JWT_TTL as StringValue,
-    });
+    async signUp(
+        data: signUpInput,
+    ): Promise<{ user: ShowUser; token: string }> {
+        try {
+            var otpWithEmail = await this.otpRepo.findByCodeAndEmail(data.otp, data.email)
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new InvalidOtpError()
+            }
+            throw err
+        }
+        if (otpWithEmail.expiresAt < new Date()) {
+            throw new OtpExpiredError()
+        }
+        await this.otpRepo.deleteAllForEmail(data.email)
+        const userData = { ...data, otp: undefined }
+        const user = await this.createUser(userData as unknown as createUserInput);
+        const token = sign({ userId: user.id }, process.env.JWT_SECRET!, {
+            expiresIn: process.env.JWT_TTL as StringValue,
+        });
 
     return { user, token: token };
   }
 
-  async getUser(userId: number): Promise<ShowUser> {
-    try {
-      const user = await this.usersRepo.findById(userId);
-      return { ...user, password: undefined };
-    } catch (err) {
-      if (err instanceof NotFoundError) {
-        throw new InvalidCredentialsError();
-      }
-      throw err;
+    async getUser(userId: number): Promise<ShowUserWithRelations> {
+        try {
+            const user = await this.usersRepo.getByIdWithPosts(userId);
+            return { ...user, password: undefined };
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new InvalidCredentialsError();
+            }
+            throw err;
+        }
     }
-  }
 
   async listUsers(): Promise<ShowUser[]> {
     const users = await this.usersRepo.list();

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import {
+    HTTPBadRequestError,
     HTTPConflictError,
     HTTPForbiddenError,
     HTTPNotFoundError,
@@ -8,7 +9,8 @@ import {
 import { validateObjectId, validateRequest } from "../core/validation";
 import {
     InvalidCredentialsError,
-    NotAllowed,
+    InvalidOtpError,
+    OtpExpiredError,
     OtpGenerationForbidden,
     PostNotFoundError,
     UserAlreadyExistsError,
@@ -38,6 +40,10 @@ export class UsersHandlers {
             res.status(201).json(getSuccededResponse(data));
         } catch (err) {
             if (err instanceof UserAlreadyExistsError) throw new HTTPConflictError(err.message);
+            if (err instanceof InvalidOtpError)
+                throw new HTTPBadRequestError(err.message)
+            if (err instanceof OtpExpiredError)
+                throw new HTTPBadRequestError(err.message)
             throw err;
         }
     };
