@@ -24,8 +24,6 @@ app.use(usersMiddlewares.authenticate);
 
 app.use("/api/v1", router);
 app.use(errorHandler);
-app.listen(PORT, HOST, () => {
-  console.log(`Server is running on http://${HOST}:${PORT}`);
 app.listen(Config.SERVER_PORT, Config.SERVER_HOST, () => {
     console.log(`Server is running on http://${Config.SERVER_HOST}:${Config.SERVER_PORT}`);
 });
