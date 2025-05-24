@@ -8,6 +8,7 @@ import {
 } from "../core/http-errors";
 import { validateObjectId, validateRequest } from "../core/validation";
 import {
+    NotAllowed,
     InvalidCredentialsError,
     InvalidOtpError,
     OtpExpiredError,

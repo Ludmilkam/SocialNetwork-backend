@@ -44,4 +44,9 @@ export class PostsHandlers {
             throw err;
         }
     }
+
+    public listTags = async (req: Request, res: Response) => {
+        const posts = await this.service.listTags();
+        res.status(200).json(getSuccededResponse(posts))
+    };
 }

@@ -41,6 +41,11 @@ export class PostsService {
         const posts = await this.postsRepo.getAll();
         return posts.map((post) => ({ ...post, author: { ...post.author, password: undefined } }));
     }
+
+    async listTags(){
+        const tags = await this.postsRepo.getAllTags()
+        return tags.map((tag) => ({...tag}))
+    }
 }
 
 export const postsService = new PostsService();

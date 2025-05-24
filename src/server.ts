@@ -12,11 +12,7 @@ app.use(
   cors({
     origin: "exp://192.168.0.115:8081",
     methods: ["GET", "POST", "DELETE"],
-  }),
-    cors({
-        origin: "http://localhost:5173",
-        methods: ["GET", "POST"],
-    }),
+  })
 );
 app.use(express.static('uploads'))
 app.use(express.json());
