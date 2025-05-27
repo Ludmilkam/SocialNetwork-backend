@@ -8,4 +8,6 @@ model Media {
   type        MediaType @default(IMAGE)
   url         String
   posts       Post[]
+  users User[]
+  albums Album[]
 }
