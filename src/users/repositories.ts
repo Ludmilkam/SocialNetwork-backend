@@ -36,6 +36,10 @@ export class UsersRepository {
             throw err;
         }
     }
+    async getFriendsForUser(userId: number) {
+        return await prisma.user.findMany({})
+    }
+    async getFriendRequestsForUser(userId: number) { }
     async list(): Promise<User[]> {
         return await prisma.user.findMany();
     }
