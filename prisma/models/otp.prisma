@@ -1,6 +1,5 @@
-
 model OtpEmail {
-  otp String @id
-  email String
+  otp       String   @id
+  email     String
   expiresAt DateTime
 }
