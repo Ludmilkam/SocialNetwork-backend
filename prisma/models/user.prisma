@@ -13,6 +13,33 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   createdPosts Post[]
-  viewedPosts  Post[]    @relation("UserPostViews")
-  likedPosts   Post[]    @relation("UserPostLikes")
+  viewedPosts Post[] @relation("UserPostViews")
+  likedPosts Post[] @relation("UserPostLikes")
+  photos Media[]
+  albums Album[]
+  ownFriendships UserFriend[] @relation("UserOwnFriendships")
+  receivedFriendships UserFriend[] @relation("UserReceivedFriendships")
+}
+
+model Album {
+  id          Int      @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+  name String 
+  subject String
+  year Int
+  photos Media[]
+}
+
+// UserFriend represents both user's friends and user's friendship requests
+// The semantic value of the record depends on isApproved field:
+// if isApproved is true - record represents a complete frendship
+// otherwise it's a friendship request
+model UserFriend {
+  fromUser User @relation("UserOwnFriendships", fields: [fromUserId], references: [id])
+  fromUserId Int 
+  toUser User @relation("UserReceivedFriendships", fields: [toUserId], references: [id])
+  toUserId Int 
+  isApproved Boolean @default(false)
+  @@id([fromUserId, toUserId])
 }

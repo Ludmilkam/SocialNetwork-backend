@@ -7,6 +7,7 @@ const prisma = new PrismaClient();
 async function main() {
   // Создание тегов
   const tagNames = ['tech', 'life', 'news', 'sports', 'funny'];
+  console.log("Creating tags")
   const tags = await Promise.all(
     tagNames.map(name =>
       prisma.tag.create({
@@ -16,9 +17,9 @@ async function main() {
   );
   const fakeSigUrl = "https://i.postimg.cc/Y9hXr68H/2e45ce67c76ede75ba73053a7a6cb14863dc3380.png"
 
-  // Создание пользователей
+  console.log("Creating users")
   const users = await Promise.all(
-    Array.from({ length: 10 }).map(async () =>
+    Array.from({ length: 30 }).map(async () =>
       prisma.user.create({
         data: {
           username: faker.internet.username(),
@@ -29,13 +30,32 @@ async function main() {
           lastName: faker.person.lastName(),
           birthDate: faker.date.birthdate(),
           avatarUrl: faker.image.avatar(),
-          password: await hash("123456789", 10)
+          password: await hash("123456789", 10),
         },
       })
     )
   );
+  let _usedUserIds: number[] = []
+  const getRandomUserIdOmitCurr = (currUserId: number): number => {
+    let userId = faker.helpers.arrayElement(users).id
+    while (currUserId === userId || _usedUserIds.includes(userId)) {
+      userId = faker.helpers.arrayElement(users).id
+    }
+    _usedUserIds.push(userId)
+    return userId
+  }
 
-  // Создание медиа
+  console.log("Creating friends for first x users")
+  await Promise.all(users.slice(0, 10).map((user) =>
+    prisma.userFriend.createMany(
+      {
+        data: Array.from({ length: faker.number.int(5) })
+          .map(() => ({ fromUserId: user.id, toUserId: getRandomUserIdOmitCurr(user.id), isApproved: faker.datatype.boolean() }))
+      }
+    )
+  ))
+
+  console.log("Creating media")
   const mediaItems = await Promise.all(
     Array.from({ length: 20 }).map(() =>
       prisma.media.create({
@@ -47,7 +67,21 @@ async function main() {
     )
   );
 
-  // Создание постов
+  console.log("Creating user's albums")
+  await Promise.all(users.map(async (user) =>
+    prisma.album.createMany({
+      data: Array.from({ length: faker.number.int({ max: 5 }) }).map(() =>
+      ({
+        userId: user.id,
+        name: faker.lorem.sentence(),
+        subject: faker.lorem.words(3),
+        year: faker.date.birthdate().getFullYear()
+      })
+      )
+    })
+  ))
+
+  console.log("Creating posts")
   for (let i = 0; i < 20; i++) {
     const author = faker.helpers.arrayElement(users);
     const postTags = faker.helpers.arrayElements(tags, faker.number.int({ min: 1, max: 3 }));
