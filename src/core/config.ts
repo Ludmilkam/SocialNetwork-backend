@@ -6,7 +6,7 @@ export const Config = {
   SMTP_USE_SSL: !!process.env.SMTP_USE_SSL,
   SMTP_USER: process.env.SMTP_USER!,
   SMTP_PASSWORD: process.env.SMTP_PASSWORD!,
-  SERVER_HOST: process.env.SERVER_HOST || "192.168.0.115",
+  SERVER_HOST: process.env.SERVER_HOST || "localhost",
   SERVER_PORT: Number(process.env.SERVER_PORT) || 8000,
   OTP_LENGTH: 6,
   OTP_TTL: (process.env.OTP_TTL || "5m") as StringValue,
