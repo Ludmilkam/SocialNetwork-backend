@@ -6,6 +6,7 @@ import {
     signInInput,
     signUpInput,
     User,
+    UserFriend,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { OtpEmailRepository, UsersRepository } from "./repositories";
@@ -16,6 +17,7 @@ import { generate } from "otp-generator";
 import { sendMail } from "../core/mailing";
 import { Config } from "../core/config";
 import ms from "ms";
+
 
 export class InvalidCredentialsError extends Error {
   constructor() {
@@ -171,6 +173,16 @@ export class UsersService {
     }
   }
 
+  async allFriends(userId: number): Promise<User[]> {
+    const allFriends = await this.usersRepo.getFriendsForUser(userId);
+    return allFriends.map((friend)=>({...friend}))
+  }
+
+  async friendRequests(userId: number): Promise<UserFriend[]> {
+    const friendRequests = await this.usersRepo.getFriendRequestsForUser(userId)
+    return friendRequests.map((request)=>({...request}))
+  }
+
   async sendOTP(email: string) {
     let user;
     try {
@@ -198,6 +210,10 @@ export class UsersService {
             in registration.\n${otp}`,
     );
   }
+
+  
 }
 
 export const usersService = new UsersService();
+
+

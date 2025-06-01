@@ -40,11 +40,12 @@ export class UsersHandlers {
 
             res.status(201).json(getSuccededResponse(data));
         } catch (err) {
-            if (err instanceof UserAlreadyExistsError) throw new HTTPConflictError(err.message);
+            if (err instanceof UserAlreadyExistsError)
+                throw new HTTPConflictError(err.message);
             if (err instanceof InvalidOtpError)
-                throw new HTTPBadRequestError(err.message)
+                throw new HTTPBadRequestError(err.message);
             if (err instanceof OtpExpiredError)
-                throw new HTTPBadRequestError(err.message)
+                throw new HTTPBadRequestError(err.message);
             throw err;
         }
     };
@@ -108,33 +109,50 @@ export class UsersHandlers {
     public deletePost = async (req: Request, res: Response): Promise<void> => {
         requireAdmin(res);
         const userId = validateObjectId(req.params.userId);
-        const postId = validateObjectId(req.params.postId)
-        try{
-            const post = await this.service.deletePost(userId, postId)
+        const postId = validateObjectId(req.params.postId);
+        try {
+            const post = await this.service.deletePost(userId, postId);
             res.status(200).json(getSuccededResponse(post));
-        }catch(err){
+        } catch (err) {
             if (err instanceof PostNotFoundError) {
-                throw new HTTPNotFoundError("Post not found")
-            } else if (err instanceof NotAllowed){
-                throw new HTTPForbiddenError("It`s not your post")
+                throw new HTTPNotFoundError("Post not found");
+            } else if (err instanceof NotAllowed) {
+                throw new HTTPForbiddenError("It`s not your post");
             }
             throw err;
         }
+    };
+
+    public allFriends = async (req: Request, res: Response) => {
+        const userId = requireAuthorized(res);
+        const allFriends = await this.service.allFriends(userId)
+        res.status(200).json(allFriends)
+
+    }
+
+    public friendRequests = async (req: Request, res: Response) => {
+        const userId = requireAuthorized(res);
+        const friendRequests = await this.service.friendRequests(userId)
+        res.status(200).json(friendRequests)
     }
 
     // 1. фронт отправляет запрос с имеилом юзера для отправки токена на его почту
     // 2. фронт отправляет запрос на регистрацию с данными пользователя + токен который юзер ввел
     public sendOTP = async (req: Request, res: Response) => {
-        const body = validateRequest(req, sendOTPSchema)
+        const body = validateRequest(req, sendOTPSchema);
         try {
-            await this.service.sendOTP(body.email)
+            await this.service.sendOTP(body.email);
         } catch (err) {
             if (err instanceof OtpGenerationForbidden) {
-                throw new HTTPForbiddenError("You can't create otp if you already registered")
+                throw new HTTPForbiddenError(
+                    "You can't create otp if you already registered"
+                );
             }
-            throw err
+            throw err;
         }
-        res.status(204).send()
-    }
+        res.status(204).send();
+    };
+
 
 }
+
