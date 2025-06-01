@@ -52,9 +52,16 @@ export class UsersRepository {
     }
     async getFriendRequestsForUser(userId: number) {
         // get all friend requests initiated to `userId` together with user which initiated it
-        return await prisma.userFriend.findMany({
-            where: { toUserId: userId, isApproved: false },
-            include: { fromUser: true }
+         return await prisma.user.findMany({
+            where: {
+                OR: [
+                    { ownFriendships: { some: { fromUserId: userId, isApproved: false } } },
+                    { ownFriendships: { some: { toUserId: userId, isApproved: false } } },
+                ],
+                NOT: {
+                    id: userId
+                }
+            }
         })
     }
 

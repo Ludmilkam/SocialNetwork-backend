@@ -174,9 +174,9 @@ export class UsersService {
         }
     }
 
-    async listUsers(): Promise<ShowUser[]> {
+    async listUsers(): Promise<User[]> {
         const users = await this.usersRepo.list();
-        return users.map((user) => ({ ...user, password: undefined }));
+        return users.map((user) => ({ ...user}));
     }
 
     async deletePost(userId: number, postId: number): Promise<void> {
@@ -195,7 +195,7 @@ export class UsersService {
         return allFriends.map((friend) => ({ ...friend }));
     }
 
-    async friendRequests(userId: number): Promise<UserFriend[]> {
+    async friendRequests(userId: number): Promise<User[]> {
         const friendRequests = await this.usersRepo.getFriendRequestsForUser(userId);
         return friendRequests.map((request) => ({ ...request }));
     }

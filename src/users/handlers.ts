@@ -77,6 +77,7 @@ export class UsersHandlers {
     };
     public listUsers = async (req: Request, res: Response) => {
         const users = await this.service.listUsers();
+        console.log(users)
         res.status(200).json(users);
     };
 
@@ -145,6 +146,7 @@ export class UsersHandlers {
     public allFriends = async (req: Request, res: Response) => {
         const userId = requireAuthorized(res);
         const allFriends = await this.service.allFriends(userId)
+        console.log(allFriends)
         res.status(200).json(getSuccededResponse(allFriends))
 
     }
@@ -152,6 +154,7 @@ export class UsersHandlers {
     public friendRequests = async (req: Request, res: Response) => {
         const userId = requireAuthorized(res);
         const friendRequests = await this.service.friendRequests(userId)
+        console.log(friendRequests)
         res.status(200).json(getSuccededResponse(friendRequests))
     }
 

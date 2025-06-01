@@ -19,7 +19,7 @@ async function main() {
 
   console.log("Creating users")
   const users = await Promise.all(
-    Array.from({ length: 30 }).map(async () =>
+    Array.from({ length: 3 }).map(async () =>
       prisma.user.create({
         data: {
           username: faker.internet.username(),
@@ -46,7 +46,7 @@ async function main() {
   }
 
   console.log("Creating friends for first x users")
-  await Promise.all(users.slice(0, 10).map((user) =>
+  await Promise.all(users.slice(0, 2).map((user) =>
     prisma.userFriend.createMany(
       {
         data: Array.from({ length: faker.number.int(5) })
@@ -57,7 +57,7 @@ async function main() {
 
   console.log("Creating media")
   const mediaItems = await Promise.all(
-    Array.from({ length: 20 }).map(() =>
+    Array.from({ length: 5 }).map(() =>
       prisma.media.create({
         data: {
           url: faker.image.url(),
@@ -82,7 +82,7 @@ async function main() {
   ))
 
   console.log("Creating posts")
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 5; i++) {
     const author = faker.helpers.arrayElement(users);
     const postTags = faker.helpers.arrayElements(tags, faker.number.int({ min: 1, max: 3 }));
     const postMedia = faker.helpers.arrayElements(mediaItems, faker.number.int({ min: 0, max: 2 }));
