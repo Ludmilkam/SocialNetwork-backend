@@ -163,7 +163,7 @@ export class UsersService {
         }
     }
 
-    async updateUser(userId: number, data: updateUserInput) :Promise<User>{
+    async updateUser(userId: number, data: updateUserInput): Promise<User> {
         try {
             return await this.usersRepo.update(userId, data);
         } catch (err) {
@@ -196,8 +196,7 @@ export class UsersService {
     }
 
     async friendRequests(userId: number): Promise<UserFriend[]> {
-        const friendRequests =
-            await this.usersRepo.getFriendRequestsForUser(userId);
+        const friendRequests = await this.usersRepo.getFriendRequestsForUser(userId);
         return friendRequests.map((request) => ({ ...request }));
     }
 

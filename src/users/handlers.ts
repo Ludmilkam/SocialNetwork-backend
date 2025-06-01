@@ -97,7 +97,7 @@ export class UsersHandlers {
     public createUser = async (req: Request, res: Response): Promise<void> => {
         requireAdmin(res);
         const body = validateRequest(req, createUserSchema);
-        
+
         try {
             const user = await this.service.createUser(body);
             res.status(200).json(getSuccededResponse(user));
@@ -115,7 +115,7 @@ export class UsersHandlers {
         const body = req.body
         const userId = requireAuthorized(res)
         try {
-            const user = await this.service.updateUser(userId,body);
+            const user = await this.service.updateUser(userId, body);
             res.status(200).json(getSuccededResponse(user));
         } catch (err) {
             if (err instanceof UserNotFoundError) {
@@ -145,14 +145,14 @@ export class UsersHandlers {
     public allFriends = async (req: Request, res: Response) => {
         const userId = requireAuthorized(res);
         const allFriends = await this.service.allFriends(userId)
-        res.status(200).json(allFriends)
+        res.status(200).json(getSuccededResponse(allFriends))
 
     }
 
     public friendRequests = async (req: Request, res: Response) => {
         const userId = requireAuthorized(res);
         const friendRequests = await this.service.friendRequests(userId)
-        res.status(200).json(friendRequests)
+        res.status(200).json(getSuccededResponse(friendRequests))
     }
 
     // 1. фронт отправляет запрос с имеилом юзера для отправки токена на его почту
