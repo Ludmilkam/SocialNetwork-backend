@@ -7,6 +7,7 @@ const handlers = new UsersHandlers()
 
 router.post("/signup", handlers.signUp);
 router.post("/signin", handlers.signIn);
+router.post("/update", handlers.updateUser)
 router.get("/me", handlers.getUser);
 router.post("/send-otp", handlers.sendOTP)
 router.delete("/delete", handlers.deletePost)

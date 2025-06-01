@@ -75,6 +75,20 @@ export class UsersRepository {
     }
   }
 
+  async update(id: number,data:Prisma.UserUpdateInput): Promise <User>{
+    try {
+      return await prisma.user.update({
+        where: { id },
+        data
+      });
+    } catch (err) {
+      if (getErrorCode(err) === ErrorCodes.NotFound) {
+        throw new NotFoundError();
+      }
+      throw err;
+    }
+  }
+
   async deletePost(userId: number, postId: number): Promise<void> {
     try {
       const post = await prisma.post.findUnique({
