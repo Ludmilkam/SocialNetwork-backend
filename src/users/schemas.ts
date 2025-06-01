@@ -19,3 +19,6 @@ export const sendOTPSchema = z.object({
 export const createUserSchema = signUpSchema
 
 export const updateUserSchema = signUpSchema.omit({ password: true });
+
+
+// export const updateSchema = .omit({ email: true,password: true });
