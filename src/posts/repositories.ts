@@ -4,38 +4,39 @@ import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { Prisma } from "../generated/prisma";
 
 export class PostsRepository {
-    async getAll() {
-        return await prisma.post.findMany({
-            include: {
-                tags: true, author: true, media: true, _count: { select: { likedBy: true, viewedBy: true } }
-            }
-        }
-        )
-    }
+  async getAll() {
+    return await prisma.post.findMany({
+      include: {
+        tags: true,
+        author: true,
+        media: true,
+        _count: { select: { likedBy: true, viewedBy: true } },
+      },
+    });
+  }
 
-    async deletePostForUserById(authorId: number, postId: number): Promise<void> {
-        try {
-            await prisma.post.delete({
-                where: { id: postId, authorId },
-            });
-        } catch (err) {
-            if (getErrorCode(err) === ErrorCodes.NotFound) {
-                throw new NotFoundError();
-            }
-            throw err;
-        }
+  async deletePostForUserById(authorId: number, postId: number): Promise<void> {
+    try {
+      await prisma.post.delete({
+        where: { id: postId, authorId },
+      });
+    } catch (err) {
+      if (getErrorCode(err) === ErrorCodes.NotFound) {
+        throw new NotFoundError();
+      }
+      throw err;
     }
-    async create(data: Prisma.PostCreateInput): Promise<Post> {
-        try {
-            return await prisma.post.create({
-                data,
-            });
-        } catch (err) {
-            if (getErrorCode(err) === ErrorCodes.AlreadyExists) {
-                throw new AlreadyExistsError();
-            }
-            throw err;
-        }
+  }
+  async create(data: Prisma.PostCreateInput): Promise<Post> {
+    try {
+      return await prisma.post.create({
+        data,
+      });
+    } catch (err) {
+      if (getErrorCode(err) === ErrorCodes.AlreadyExists) {
+        throw new AlreadyExistsError();
+      }
+      throw err;
     }
+  }
 }
-

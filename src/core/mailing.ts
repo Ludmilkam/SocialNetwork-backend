@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer"
+import nodemailer from "nodemailer";
 import { Config } from "./config";
 
 const transporter = nodemailer.createTransport({
@@ -12,12 +12,12 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendMail(to: string, subject: string, body: string) {
-  console.log("Start sending mail")
+  console.log("Start sending mail");
   await transporter.sendMail({
     from: "andrewmailov@gmail.com",
     to,
     subject,
-    text: body
-  })
-  console.log("Mail succesfully sent to", to)
+    text: body,
+  });
+  console.log("Mail succesfully sent to", to);
 }
