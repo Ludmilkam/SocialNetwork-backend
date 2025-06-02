@@ -14,8 +14,8 @@ router.delete("/delete", handlers.deletePost)
 
 router.get("/all-friends", handlers.allFriends);
 router.get("/requests", handlers.friendRequests);
+router.get("/list-users", handlers.listUsers);
 
-router.get("/admin/list-users", handlers.listUsers);
 router.post("/admin/create", handlers.createUser);
 
 export default router;
