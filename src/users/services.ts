@@ -190,12 +190,12 @@ export class UsersService {
         }
     }
 
-    async allFriends(userId: number): Promise<User[]> {
+    async allFriends(userId: number): Promise<ShowUser[]> {
         const allFriends = await this.usersRepo.getFriendsForUser(userId);
         return allFriends.map((friend) => ({ ...friend }));
     }
 
-    async friendRequests(userId: number): Promise<User[]> {
+    async friendRequests(userId: number): Promise<ShowUser[]> {
         const friendRequests = await this.usersRepo.getFriendRequestsForUser(userId);
         return friendRequests.map((request) => ({ ...request }));
     }
