@@ -111,7 +111,6 @@ export class UsersHandlers {
     };
 
     public updateUser = async (req: Request, res: Response): Promise<void> => {
-        requireAdmin(res);
         const body = validateRequest(req, updateUserSchema);
         const userId = requireAuthorized(res)
         try {

@@ -22,7 +22,7 @@ export const createUserSchema = signUpSchema
 
 
 export const updateUserSchema = z.object({
-    name: z.string(),
-    surname: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
     username: z.string()
 })

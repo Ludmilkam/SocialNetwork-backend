@@ -7,7 +7,7 @@ import {
     signUpInput,
     updateUserInput,
     User,
-    UserFriend,
+
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { OtpEmailRepository, UsersRepository } from "./repositories";
@@ -190,12 +190,12 @@ export class UsersService {
         }
     }
 
-    async allFriends(userId: number): Promise<ShowUser[]> {
+    async allFriends(userId: number): Promise<User[]> {
         const allFriends = await this.usersRepo.getFriendsForUser(userId);
         return allFriends.map((friend) => ({ ...friend }));
     }
 
-    async friendRequests(userId: number): Promise<ShowUser[]> {
+    async friendRequests(userId: number): Promise<User[]> {
         const friendRequests = await this.usersRepo.getFriendRequestsForUser(userId);
         return friendRequests.map((request) => ({ ...request }));
     }

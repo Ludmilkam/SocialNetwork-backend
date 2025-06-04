@@ -14,7 +14,6 @@ export type User<S extends boolean | null | undefined | Prisma.UserDefaultArgs =
 export type ShowUser<S extends boolean | null | undefined | Prisma.UserDefaultArgs = {}> = Omit<User<S>, "password"> & { password: undefined };
 export type ShowUserWithRelations = ShowUser<{ include: { createdPosts: true } }>
 
-export type UserFriend = Prisma.UserFriendGetPayload<{}>
 
 export type signInInput = z.infer<typeof signInSchema>;
 export type signUpInput = z.infer<typeof signUpSchema>;
