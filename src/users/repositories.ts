@@ -75,17 +75,25 @@ export class UsersRepository {
         //     include: { fromUser: true, },
         // });
 
-         return await prisma.user.findMany({
+        return await prisma.user.findMany({
             where: {
                 OR: [
-                    { ownFriendships: { some: { fromUserId: userId, isApproved: false } } },
-                    { ownFriendships: { some: { toUserId: userId, isApproved: false } } },
+                    {
+                        ownFriendships: {
+                            some: { fromUserId: userId, isApproved: false },
+                        },
+                    },
+                    {
+                        ownFriendships: {
+                            some: { toUserId: userId, isApproved: false },
+                        },
+                    },
                 ],
                 NOT: {
-                    id: userId
-                }
-            }
-        })
+                    id: userId,
+                },
+            },
+        });
     }
 
     async list(): Promise<User[]> {
@@ -113,6 +121,20 @@ export class UsersRepository {
             });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
+    }
+
+    async block(userId: number, blockedUserId: number): Promise<void> {
+        try {
+            await prisma.user.update({
+                where: { id: userId },
+                data: { blockedUsers: { connect: { id: blockedUserId } } },
+            });
+        } catch (err) {
+             if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();
             }
             throw err;

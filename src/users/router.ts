@@ -16,6 +16,8 @@ router.get("/all-friends", handlers.allFriends);
 router.get("/requests", handlers.friendRequests);
 router.get("/list-users", handlers.listUsers);
 
+router.post("/block-user", handlers.blockUser)
+
 router.post("/admin/create", handlers.createUser);
 
 export default router;

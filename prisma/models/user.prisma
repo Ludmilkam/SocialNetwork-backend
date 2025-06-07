@@ -19,6 +19,10 @@ model User {
   albums              Album[]
   ownFriendships      UserFriend[] @relation("UserOwnFriendships")
   receivedFriendships UserFriend[] @relation("UserReceivedFriendships")
+
+  blockedUsers User[] @relation("UserBlocked")
+  blockedBy    User?  @relation("UserBlocked", fields: [blockedById], references: [id])
+  blockedById  Int?
 }
 
 model Album {
@@ -44,3 +48,14 @@ model UserFriend {
 
   @@id([fromUserId, toUserId])
 }
+
+// model BlockedUser {
+//       id           Int   @id @default(autoincrement())
+//     userId       Int
+//   blockedId    Int
+
+//   user         User  @relation("UserBlocking", fields: [userId], references: [id])
+//   blockedUser  User  @relation("UserBlocked", fields: [blockedId], references: [id])
+
+//   @@unique([userId, blockedId])
+// }

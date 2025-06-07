@@ -7,7 +7,6 @@ import {
     signUpInput,
     updateUserInput,
     User,
-
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { OtpEmailRepository, UsersRepository } from "./repositories";
@@ -174,9 +173,20 @@ export class UsersService {
         }
     }
 
+    async blockUser(userId: number, blockedUserId: number) {
+        try {
+            return this.usersRepo.block(userId, blockedUserId);
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new PostNotFoundError();
+            }
+            throw err;
+        }
+    }
+
     async listUsers(): Promise<User[]> {
         const users = await this.usersRepo.list();
-        return users.map((user) => ({ ...user}));
+        return users.map((user) => ({ ...user }));
     }
 
     async deletePost(userId: number, postId: number): Promise<void> {
@@ -196,7 +206,8 @@ export class UsersService {
     }
 
     async friendRequests(userId: number): Promise<User[]> {
-        const friendRequests = await this.usersRepo.getFriendRequestsForUser(userId);
+        const friendRequests =
+            await this.usersRepo.getFriendRequestsForUser(userId);
         return friendRequests.map((request) => ({ ...request }));
     }
 

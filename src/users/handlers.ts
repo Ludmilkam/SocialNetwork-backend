@@ -77,7 +77,7 @@ export class UsersHandlers {
     };
     public listUsers = async (req: Request, res: Response) => {
         const users = await this.service.listUsers();
-        console.log(users)
+        console.log(users);
         res.status(200).json(getSuccededResponse(users));
     };
 
@@ -112,7 +112,7 @@ export class UsersHandlers {
 
     public updateUser = async (req: Request, res: Response): Promise<void> => {
         const body = validateRequest(req, updateUserSchema);
-        const userId = requireAuthorized(res)
+        const userId = requireAuthorized(res);
         try {
             const user = await this.service.updateUser(userId, body);
             res.status(200).json(getSuccededResponse(user));
@@ -123,6 +123,19 @@ export class UsersHandlers {
             throw err;
         }
     };
+
+    async blockUser(req: Request, res: Response) {
+        const { userId, blockedUserId } = req.body;
+        try {
+            await this.service.blockUser(Number(userId), Number(blockedUserId));
+            res.status(200).json({ message: "User blocked successfully" });
+        } catch (err) {
+            if (err instanceof UserNotFoundError) {
+                throw new HTTPNotFoundError("User not found");
+            } 
+            throw err;
+        }
+    }
 
     public deletePost = async (req: Request, res: Response): Promise<void> => {
         requireAdmin(res);
@@ -143,18 +156,17 @@ export class UsersHandlers {
 
     public allFriends = async (req: Request, res: Response) => {
         const userId = requireAuthorized(res);
-        const allFriends = await this.service.allFriends(userId)
-        console.log(allFriends)
-        res.status(200).json(getSuccededResponse(allFriends))
-
-    }
+        const allFriends = await this.service.allFriends(userId);
+        console.log(allFriends);
+        res.status(200).json(getSuccededResponse(allFriends));
+    };
 
     public friendRequests = async (req: Request, res: Response) => {
         const userId = requireAuthorized(res);
-        const friendRequests = await this.service.friendRequests(userId)
-        console.log(friendRequests)
-        res.status(200).json(getSuccededResponse(friendRequests))
-    }
+        const friendRequests = await this.service.friendRequests(userId);
+        console.log(friendRequests);
+        res.status(200).json(getSuccededResponse(friendRequests));
+    };
 
     // 1. фронт отправляет запрос с имеилом юзера для отправки токена на его почту
     // 2. фронт отправляет запрос на регистрацию с данными пользователя + токен который юзер ввел
@@ -172,7 +184,4 @@ export class UsersHandlers {
         }
         res.status(204).send();
     };
-
-
 }
-
