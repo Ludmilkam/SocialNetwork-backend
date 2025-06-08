@@ -142,11 +142,8 @@ export class UsersHandlers {
         res: Response
     ): Promise<void> => {
         const { fromUserId, toUserId } = req.body;
-        const result = await this.service.acceptRequest(
-            fromUserId,
-            toUserId
-        );
-        res.status(200).json(result)
+        const result = await this.service.acceptRequest(fromUserId, toUserId);
+        res.status(200).json(result);
     };
 
     public declineRequest = async (
@@ -154,11 +151,8 @@ export class UsersHandlers {
         res: Response
     ): Promise<void> => {
         const { fromUserId, toUserId } = req.body;
-        const result = await this.service.declineRequest(
-            fromUserId,
-            toUserId
-        );
-        res.status(200).json(result)
+        const result = await this.service.declineRequest(fromUserId, toUserId);
+        res.status(200).json(result);
     };
 
     public deleteFriend = async (
@@ -166,11 +160,29 @@ export class UsersHandlers {
         res: Response
     ): Promise<void> => {
         const { fromUserId, toUserId } = req.body;
-        const result = await this.service.deleteFriend(
-            fromUserId,
-            toUserId
-        );
-        res.status(200).json(result)
+        try {
+            const result = await this.service.deleteFriend(
+                fromUserId,
+                toUserId
+            );
+            res.json({ success: true, data: result });
+        } catch (err) {
+            res.status(400).json({ success: false, message: err });
+        }
+    };
+
+    public addFriend = async (req: Request, res: Response): Promise<void> => {
+        const { fromUserId, toUserId } = req.body;
+
+        try {
+            const result = await this.service.addFriend(
+                fromUserId,
+                toUserId
+            );
+            res.json({ success: true, data: result });
+        } catch (err) {
+            res.status(400).json({ success: false, message: err });
+        }
     };
 
     public deletePost = async (req: Request, res: Response): Promise<void> => {

@@ -31,6 +31,7 @@ async function main() {
           birthDate: faker.date.birthdate(),
           avatarUrl: faker.image.avatar(),
           password: await hash("123456789", 10),
+          blockedById: Math.random() < 0.5 ? 1 : null,
         },
       })
     )
@@ -46,7 +47,7 @@ async function main() {
   }
 
   console.log("Creating friends for first x users")
-  await Promise.all(users.slice(0, 2).map((user) =>
+  await Promise.all(users.slice(0, 1).map((user) =>
     prisma.userFriend.createMany(
       {
         data: Array.from({ length: faker.number.int(5) })
