@@ -4,6 +4,7 @@ import {
   createUserSchema,
   signInSchema,
   signUpSchema,
+  updateMeSchema,
   updateUserSchema,
 } from "./schemas";
 
@@ -24,3 +25,4 @@ export type signInInput = z.infer<typeof signInSchema>;
 export type signUpInput = z.infer<typeof signUpSchema>;
 export type createUserInput = z.infer<typeof createUserSchema>;
 export type updateUserInput = z.infer<typeof updateUserSchema>;
+export type updateMeInput = z.infer<typeof updateMeSchema> & { avatarUrl?: string }

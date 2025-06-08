@@ -5,6 +5,7 @@ import {
   ShowUserWithRelations,
   signInInput,
   signUpInput,
+  updateMeInput,
   User,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
@@ -135,6 +136,18 @@ export class UsersService {
   async getUser(userId: number): Promise<ShowUserWithRelations> {
     try {
       const user = await this.usersRepo.getByIdWithPosts(userId);
+      return { ...user, password: undefined };
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        throw new InvalidCredentialsError();
+      }
+      throw err;
+    }
+  }
+
+  async updateUser(userId: number, data: updateMeInput): Promise<ShowUser> {
+    try {
+      const user = await this.usersRepo.updateById(userId, data);
       return { ...user, password: undefined };
     } catch (err) {
       if (err instanceof NotFoundError) {

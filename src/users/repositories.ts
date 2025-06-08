@@ -68,6 +68,17 @@ export class UsersRepository {
     });
   }
 
+  async updateById(userId: number, data: Prisma.UserUpdateInput): Promise<User> {
+    try {
+      return await prisma.user.update({ where: { id: userId }, data })
+    } catch (err) {
+      if (getErrorCode(err) === ErrorCodes.NotFound) {
+        throw new NotFoundError();
+      }
+      throw err;
+    }
+  }
+
   async list(): Promise<User[]> {
     return await prisma.user.findMany();
   }

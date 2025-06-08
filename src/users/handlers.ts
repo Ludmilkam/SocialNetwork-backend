@@ -21,9 +21,11 @@ import {
   sendOTPSchema,
   signInSchema,
   signUpSchema,
+  updateMeSchema,
 } from "./schemas";
 import { getSuccededResponse } from "../core/utils";
 import { requireAdmin, requireAuthorized } from "./utils";
+import { Config } from "../core/config";
 
 export class UsersHandlers {
   public service: UsersService;
@@ -60,9 +62,9 @@ export class UsersHandlers {
     }
   };
 
-  public getUser = async (req: Request, res: Response) => {
-    const userId = requireAuthorized(res);
+  public getMe = async (req: Request, res: Response) => {
     try {
+      const userId = requireAuthorized(res);
       const user = await this.service.getUser(userId);
       res.status(200).json(getSuccededResponse(user));
     } catch (err) {
@@ -71,6 +73,21 @@ export class UsersHandlers {
       throw err;
     }
   };
+
+  public updateMe = async (req: Request, res: Response) => {
+    const avatarUrl = req.file ? Config.getMediaServeUrl() + "/" + req.file.filename : undefined
+    try {
+      const userId = requireAuthorized(res);
+      const body = validateRequest(req, updateMeSchema);
+      const user = await this.service.updateUser(userId, { ...body, avatarUrl });
+      res.status(200).json(getSuccededResponse(user));
+    } catch (err) {
+      if (err instanceof InvalidCredentialsError)
+        throw new HTTPUnauthorizedError(err.message);
+      throw err;
+    }
+  };
+
   public listUsers = async (req: Request, res: Response) => {
     const users = await this.service.listUsers();
     res.status(200).json(users);

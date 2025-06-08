@@ -12,5 +12,7 @@ export const Config = {
   OTP_TTL: (process.env.OTP_TTL || "5m") as StringValue,
   JWT_TTL: (process.env.JWT_TTL || "1h") as StringValue,
   JWT_SECRET: process.env.JWT_SECRET!,
-  MEDIA_SERVE_URL: process.env.MEDIA_SERVE_URL,
+  getMediaServeUrl: () => {
+    return process.env.MEDIA_SERVE_URL || `http://${Config.SERVER_HOST}:${Config.SERVER_PORT}`
+  }
 };

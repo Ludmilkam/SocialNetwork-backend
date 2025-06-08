@@ -23,11 +23,9 @@ export class PostsHandlers {
     const body = validateRequest(req, createPostSchema);
     const media = req.files
       ? (req.files as Express.Multer.File[]).map((item) => ({
-          url:
-            Config.MEDIA_SERVE_URL ||
-            `http://${Config.SERVER_HOST}:${Config.SERVER_PORT}/${item.filename}`,
-          type: MediaType.IMAGE,
-        }))
+        url: Config.getMediaServeUrl() + "/" + item.filename,
+        type: MediaType.IMAGE,
+      }))
       : [];
     const post = await this.service.createPost(userId, {
       ...body,
