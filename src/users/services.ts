@@ -135,7 +135,7 @@ export class UsersService {
 
   async getUser(userId: number): Promise<ShowUserWithRelations> {
     try {
-      const user = await this.usersRepo.getByIdWithPosts(userId);
+      const user = await this.usersRepo.getByIdWithRelations(userId);
       return { ...user, password: undefined };
     } catch (err) {
       if (err instanceof NotFoundError) {

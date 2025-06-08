@@ -21,7 +21,7 @@ export class UsersRepository {
     return await this.findUnique({ email });
   }
 
-  async getByIdWithPosts(
+  async getByIdWithRelations(
     id: number,
   ): Promise<User<{ include: { createdPosts: true } }>> {
     try {
@@ -35,6 +35,7 @@ export class UsersRepository {
               _count: { select: { likedBy: true, viewedBy: true } },
             },
           },
+          albums: { include: { photos: true } }
         },
       });
     } catch (err) {

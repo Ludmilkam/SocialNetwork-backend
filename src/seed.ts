@@ -103,16 +103,25 @@ async function main() {
   console.log("Creating user's albums");
   await Promise.all(
     users.map(async (user) =>
-      prisma.album.createMany({
-        data: Array.from({ length: faker.number.int({ max: 5 }) }).map(() => ({
-          userId: user.id,
-          name: faker.lorem.sentence(),
-          subject: faker.lorem.words(3),
-          year: faker.date.birthdate().getFullYear(),
+      await Promise.all(
+        Array.from({ length: faker.number.int({ max: 5 }) }).map(() => (prisma.album.create({
+          data: {
+            userId: user.id,
+            name: faker.lorem.sentence(),
+            subject: faker.lorem.words(3),
+            year: faker.date.birthdate().getFullYear(),
+            photos: {
+              connect: faker.helpers.arrayElements(
+                mediaItems,
+                faker.number.int({ min: 0, max: 4 })
+              )
+            },
+          }
         })),
-      }),
-    ),
-  );
+        ),
+      )
+    )
+  )
 
   console.log("Creating posts");
   for (let i = 0; i < 20; i++) {
