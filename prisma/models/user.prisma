@@ -49,13 +49,3 @@ model UserFriend {
   @@id([fromUserId, toUserId])
 }
 
-// model BlockedUser {
-//       id           Int   @id @default(autoincrement())
-//     userId       Int
-//   blockedId    Int
-
-//   user         User  @relation("UserBlocking", fields: [userId], references: [id])
-//   blockedUser  User  @relation("UserBlocked", fields: [blockedId], references: [id])
-
-//   @@unique([userId, blockedId])
-// }

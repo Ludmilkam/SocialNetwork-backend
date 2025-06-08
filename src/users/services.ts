@@ -184,6 +184,22 @@ export class UsersService {
         }
     }
 
+    async acceptRequest(fromUserId: number, toUserId: number) {
+        return this.usersRepo.acceptRequest(fromUserId, toUserId);
+    }
+
+    async declineRequest(fromUserId: number, toUserId: number) {
+        return this.usersRepo.declineRequest(fromUserId, toUserId);
+    }
+
+    async deleteFriend(fromUserId: number, toUserId: number) {
+        return this.usersRepo.deleteFriend(fromUserId, toUserId);
+    }
+
+    async addFriend(fromUserId: number, toUserId: number) {
+        return this.usersRepo.addFriend(fromUserId, toUserId);
+    }
+
     async listUsers(): Promise<User[]> {
         const users = await this.usersRepo.list();
         return users.map((user) => ({ ...user }));

@@ -124,7 +124,7 @@ export class UsersHandlers {
         }
     };
 
-    async blockUser(req: Request, res: Response) {
+    public blockUser = async (req: Request, res: Response): Promise<void> => {
         const { userId, blockedUserId } = req.body;
         try {
             await this.service.blockUser(Number(userId), Number(blockedUserId));
@@ -132,10 +132,55 @@ export class UsersHandlers {
         } catch (err) {
             if (err instanceof UserNotFoundError) {
                 throw new HTTPNotFoundError("User not found");
-            } 
+            }
             throw err;
         }
-    }
+    };
+
+    public acceptRequest = async (
+        req: Request,
+        res: Response
+    ): Promise<void> => {
+        const { fromUserId, toUserId } = req.body;
+        const result = await this.service.acceptRequest(
+            fromUserId,
+            toUserId
+        );
+        res.status(200).json(result)
+    };
+
+    public declineRequest = async (
+        req: Request,
+        res: Response
+    ): Promise<void> => {
+        const { fromUserId, toUserId } = req.body;
+        const result = await this.service.declineRequest(
+            fromUserId,
+            toUserId
+        );
+        res.status(200).json(result)
+    };
+
+    public deleteFriend = async (
+        req: Request,
+        res: Response
+    ): Promise<void> => {
+        const { fromUserId, toUserId } = req.body;
+        const result = await this.service.deleteFriend(
+            fromUserId,
+            toUserId
+        );
+        res.status(200).json(result)
+    };
+
+    public addFriend = async (req: Request, res: Response): Promise<void> => {
+        const { fromUserId, toUserId } = req.body;
+        const result = await this.service.addFriend(
+            fromUserId,
+            toUserId
+        );
+        res.status(200).json(result)
+    };
 
     public deletePost = async (req: Request, res: Response): Promise<void> => {
         requireAdmin(res);

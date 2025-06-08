@@ -134,11 +134,36 @@ export class UsersRepository {
                 data: { blockedUsers: { connect: { id: blockedUserId } } },
             });
         } catch (err) {
-             if (getErrorCode(err) === ErrorCodes.NotFound) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();
             }
             throw err;
         }
+    }
+
+    async acceptRequest(fromUserId: number, toUserId: number) {
+        return prisma.userFriend.update({
+            where: { fromUserId_toUserId: { fromUserId, toUserId } },
+            data: { isApproved: true },
+        });
+    }
+
+    async declineRequest(fromUserId: number, toUserId: number) {
+        return prisma.userFriend.delete({
+            where: { fromUserId_toUserId: { fromUserId, toUserId } },
+        });
+    }
+
+    async deleteFriend(fromUserId: number, toUserId: number) {
+        return prisma.userFriend.delete({
+            where: { fromUserId_toUserId: { fromUserId, toUserId } },
+        });
+    }
+
+    async addFriend(fromUserId: number, toUserId: number) {
+        return prisma.userFriend.create({
+            data: { fromUserId, toUserId, isApproved: false },
+        });
     }
 
     async deletePost(userId: number, postId: number): Promise<void> {
