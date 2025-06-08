@@ -173,15 +173,6 @@ export class UsersHandlers {
         res.status(200).json(result)
     };
 
-    public addFriend = async (req: Request, res: Response): Promise<void> => {
-        const { fromUserId, toUserId } = req.body;
-        const result = await this.service.addFriend(
-            fromUserId,
-            toUserId
-        );
-        res.status(200).json(result)
-    };
-
     public deletePost = async (req: Request, res: Response): Promise<void> => {
         requireAdmin(res);
         const userId = validateObjectId(req.params.userId);

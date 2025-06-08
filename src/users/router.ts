@@ -20,7 +20,6 @@ router.post("/block-user", handlers.blockUser)
 router.post("/accept-request", handlers.acceptRequest)
 router.post("/decline-request", handlers.declineRequest)
 router.post("/delete-friend", handlers.deleteFriend)
-router.post("/add-friend", handlers.addFriend)
 // router.post("/send-message")
 
 router.post("/admin/create", handlers.createUser);

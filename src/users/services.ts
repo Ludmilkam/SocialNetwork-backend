@@ -196,9 +196,6 @@ export class UsersService {
         return this.usersRepo.deleteFriend(fromUserId, toUserId);
     }
 
-    async addFriend(fromUserId: number, toUserId: number) {
-        return this.usersRepo.addFriend(fromUserId, toUserId);
-    }
 
     async listUsers(): Promise<User[]> {
         const users = await this.usersRepo.list();

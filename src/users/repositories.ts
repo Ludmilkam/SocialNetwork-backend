@@ -160,12 +160,6 @@ export class UsersRepository {
         });
     }
 
-    async addFriend(fromUserId: number, toUserId: number) {
-        return prisma.userFriend.create({
-            data: { fromUserId, toUserId, isApproved: false },
-        });
-    }
-
     async deletePost(userId: number, postId: number): Promise<void> {
         try {
             const post = await prisma.post.findUnique({
