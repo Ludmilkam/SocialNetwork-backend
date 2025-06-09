@@ -16,10 +16,10 @@ router.get("/all-friends", handlers.allFriends);
 router.get("/requests", handlers.friendRequests);
 router.get("/list-users", handlers.listUsers);
 
-router.post("/block-user", handlers.blockUser)
+// router.post("/block-user", handlers.blockUser)
 router.post("/accept-request", handlers.acceptRequest)
-router.post("/decline-request", handlers.declineRequest)
-router.post("/delete-friend", handlers.deleteFriend)
+router.delete("/decline-request", handlers.declineRequest)
+router.delete("/delete-friend", handlers.deleteFriend)
 // router.post("/send-message")
 
 router.post("/admin/create", handlers.createUser);
