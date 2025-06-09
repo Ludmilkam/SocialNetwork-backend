@@ -128,7 +128,7 @@ export class UsersHandlers {
         const { userId, blockedUserId } = req.body;
         try {
             await this.service.blockUser(Number(userId), Number(blockedUserId));
-            res.status(200).json({ message: "User blocked successfully" });
+            res.status(204).send();
         } catch (err) {
             if (err instanceof UserNotFoundError) {
                 throw new HTTPNotFoundError("User not found");
@@ -141,45 +141,49 @@ export class UsersHandlers {
         req: Request,
         res: Response
     ): Promise<void> => {
-        const { fromUserId, toUserId } = req.body;
+        const toUserId = requireAuthorized(res)
+        const { fromUserId } = req.body;
         const result = await this.service.acceptRequest(fromUserId, toUserId);
-        res.status(200).json(result);
+        res.status(200).json(getSuccededResponse(result));
     };
 
     public declineRequest = async (
         req: Request,
         res: Response
     ): Promise<void> => {
-        const { fromUserId, toUserId } = req.body;
+        const toUserId = requireAuthorized(res)
+        const { fromUserId } = req.body;
         const result = await this.service.declineRequest(fromUserId, toUserId);
-        res.status(200).json(result);
+        res.status(200).json(getSuccededResponse(result));
     };
 
     public deleteFriend = async (
         req: Request,
         res: Response
     ): Promise<void> => {
-        const { fromUserId, toUserId } = req.body;
+        const toUserId = requireAuthorized(res)
+        const { fromUserId } = req.body;
         try {
             const result = await this.service.deleteFriend(
                 fromUserId,
                 toUserId
             );
-            res.json({ success: true, data: result });
+            res.json(getSuccededResponse(result));
         } catch (err) {
-            res.status(400).json({ success: false, message: err });
+            throw new HTTPBadRequestError("bad request")
         }
     };
 
-    public addFriend = async (req: Request, res: Response): Promise<void> => {
-        const { fromUserId, toUserId } = req.body;
+    public createFriendRequest = async (req: Request, res: Response): Promise<void> => {
+        const fromUserId = requireAuthorized(res)
+        const { toUserId } = req.body;
 
         try {
-            const result = await this.service.addFriend(
+            const result = await this.service.createFriendRequest(
                 fromUserId,
                 toUserId
             );
-            res.json({ success: true, data: result });
+            res.json(getSuccededResponse(result));
         } catch (err) {
             res.status(400).json({ success: false, message: err });
         }

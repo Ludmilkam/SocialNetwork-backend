@@ -196,8 +196,8 @@ export class UsersService {
         return this.usersRepo.deleteFriend(fromUserId, toUserId);
     }
 
-    async addFriend(fromUserId: number, toUserId: number) {
-        return this.usersRepo.addFriend(fromUserId, toUserId);
+    async createFriendRequest(fromUserId: number, toUserId: number) {
+        return this.usersRepo.createFriendRequest(fromUserId, toUserId);
     }
 
     async listUsers(): Promise<User[]> {

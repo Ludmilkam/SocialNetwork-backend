@@ -141,7 +141,9 @@ export class UsersRepository {
         }
     }
 
+    // TODO: handle not found errors
     async acceptRequest(fromUserId: number, toUserId: number) {
+        console.log(fromUserId, toUserId)
         return prisma.userFriend.update({
             where: { fromUserId_toUserId: { fromUserId, toUserId } },
             data: { isApproved: true },
@@ -160,7 +162,7 @@ export class UsersRepository {
         });
     }
 
-    async addFriend(fromUserId: number, toUserId: number) {
+    async createFriendRequest(fromUserId: number, toUserId: number) {
         return prisma.userFriend.create({
             data: { fromUserId, toUserId, isApproved: false },
         });
