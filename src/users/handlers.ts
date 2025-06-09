@@ -152,23 +152,23 @@ export class UsersHandlers {
         res: Response
     ): Promise<void> => {
         const toUserId = requireAuthorized(res)
-        const { fromUserId } = req.body;
-        const result = await this.service.declineRequest(fromUserId, toUserId);
-        res.status(200).json(getSuccededResponse(result));
+        const fromUserId = Number(req.params.fromUserId);
+        await this.service.declineRequest(fromUserId, toUserId);
+        res.status(204).send();
     };
 
     public deleteFriend = async (
         req: Request,
         res: Response
     ): Promise<void> => {
-        const toUserId = requireAuthorized(res)
-        const { fromUserId } = req.body;
+        const currUserId = requireAuthorized(res)
+        const friendId = Number(req.params.friendId);
         try {
-            const result = await this.service.deleteFriend(
-                fromUserId,
-                toUserId
+            await this.service.deleteFriend(
+                friendId,
+                currUserId
             );
-            res.json(getSuccededResponse(result));
+            res.status(204).send();
         } catch (err) {
             throw new HTTPBadRequestError("bad request")
         }

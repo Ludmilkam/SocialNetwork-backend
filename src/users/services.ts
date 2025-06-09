@@ -192,8 +192,16 @@ export class UsersService {
         return this.usersRepo.declineRequest(fromUserId, toUserId);
     }
 
-    async deleteFriend(fromUserId: number, toUserId: number) {
-        return this.usersRepo.deleteFriend(fromUserId, toUserId);
+    async deleteFriend(friendId: number, currentUserId: number) {
+        // try both combinations of ids (friendship can be bidirectional)
+        try {
+            return this.usersRepo.deleteFriend(friendId, currentUserId);
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                return this.usersRepo.deleteFriend(currentUserId, friendId);
+            }
+            throw err
+        }
     }
 
     async createFriendRequest(fromUserId: number, toUserId: number) {

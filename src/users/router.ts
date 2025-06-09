@@ -14,12 +14,13 @@ router.delete("/delete", handlers.deletePost)
 
 router.get("/all-friends", handlers.allFriends);
 router.get("/requests", handlers.friendRequests);
+router.post("/requests/create", handlers.createFriendRequest)
+router.post("/requests/accept", handlers.acceptRequest)
+router.delete("/requests/decline/:fromUserId", handlers.declineRequest)
 router.get("/list-users", handlers.listUsers);
 
 // router.post("/block-user", handlers.blockUser)
-router.post("/accept-request", handlers.acceptRequest)
-router.delete("/decline-request", handlers.declineRequest)
-router.delete("/delete-friend", handlers.deleteFriend)
+router.delete("/delete-friend/:friendId", handlers.deleteFriend)
 // router.post("/send-message")
 
 router.post("/admin/create", handlers.createUser);
