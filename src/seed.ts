@@ -81,7 +81,7 @@ async function main() {
     prisma.userFriend.createMany(
       {
         data: Array.from({ length: faker.number.int(5) })
-          .map(() => ({ fromUserId: user.id, toUserId: getRandomUserIdOmitCurr(user.id), isApproved: faker.datatype.boolean() }))
+          .map(() => ({ fromUserId: user.id, toUserId: getUniqueFromUserToUserPairIds(user.id), isApproved: faker.datatype.boolean() }))
       }
     )
   ))

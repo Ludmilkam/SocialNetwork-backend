@@ -10,9 +10,11 @@ import { validateObjectId, validateRequest } from "../core/validation";
 import {
   InvalidCredentialsError,
   InvalidOtpError,
+  NotAllowed,
   OtpExpiredError,
   OtpGenerationForbidden,
   UserAlreadyExistsError,
+  UserNotFoundError,
   usersService,
   UsersService,
 } from "./services";
@@ -22,10 +24,12 @@ import {
   signInSchema,
   signUpSchema,
   updateMeSchema,
+  updateUserSchema,
 } from "./schemas";
 import { getSuccededResponse } from "../core/utils";
 import { requireAdmin, requireAuthorized } from "./utils";
 import { Config } from "../core/config";
+import { PostNotFoundError } from "../posts/services";
 
 export class UsersHandlers {
   public service: UsersService;
