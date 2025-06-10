@@ -157,10 +157,56 @@ export class UsersService {
     }
   }
 
-  async listUsers(): Promise<ShowUser[]> {
-    const users = await this.usersRepo.list();
-    return users.map((user) => ({ ...user, password: undefined }));
-  }
+    async acceptRequest(fromUserId: number, toUserId: number) {
+        return this.usersRepo.acceptRequest(fromUserId, toUserId);
+    }
+
+    async declineRequest(fromUserId: number, toUserId: number) {
+        return this.usersRepo.declineRequest(fromUserId, toUserId);
+    }
+
+    async deleteFriend(friendId: number, currentUserId: number) {
+        // try both combinations of ids (friendship can be bidirectional)
+        try {
+            return this.usersRepo.deleteFriend(friendId, currentUserId);
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                return this.usersRepo.deleteFriend(currentUserId, friendId);
+            }
+            throw err
+        }
+    }
+
+    async createFriendRequest(fromUserId: number, toUserId: number) {
+        return this.usersRepo.createFriendRequest(fromUserId, toUserId);
+    }
+
+    async listUsers(): Promise<User[]> {
+        const users = await this.usersRepo.list();
+        return users.map((user) => ({ ...user }));
+    }
+
+    async deletePost(userId: number, postId: number): Promise<void> {
+        try {
+            const post = await this.usersRepo.deletePost(userId, postId);
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new PostNotFoundError();
+            }
+            throw err;
+        }
+    }
+
+    async allFriends(userId: number): Promise<User[]> {
+        const allFriends = await this.usersRepo.getFriendsForUser(userId);
+        return allFriends.map((friend) => ({ ...friend }));
+    }
+
+    async friendRequests(userId: number): Promise<User[]> {
+        const friendRequests =
+            await this.usersRepo.getFriendRequestsForUser(userId);
+        return friendRequests.map((request) => ({ ...request }));
+    }
 
   async sendOTP(email: string) {
     let user;
