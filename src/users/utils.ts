@@ -4,20 +4,20 @@ import { ShowUser } from "./types";
 import { InvalidCredentialsError, usersService } from "./services";
 
 export const requireAuthorized = (res: Response): number => {
-    if (!res.locals.userId) {
-        throw new HTTPUnauthorizedError();
-    }
-    return res.locals.userId;
+  if (!res.locals.userId) {
+    throw new HTTPUnauthorizedError();
+  }
+  return res.locals.userId;
 };
 
 export const requireAdmin = (res: Response): Promise<ShowUser> => {
-    const userId = requireAuthorized(res);
-    try {
-        const user = usersService.getUser(userId);
-        return user;
-    } catch (err) {
-        if (err instanceof InvalidCredentialsError)
-            throw new HTTPForbiddenError("Only admin can access that page");
-        throw err;
-    }
+  const userId = requireAuthorized(res);
+  try {
+    const user = usersService.getUser(userId);
+    return user;
+  } catch (err) {
+    if (err instanceof InvalidCredentialsError)
+      throw new HTTPForbiddenError("Only admin can access that page");
+    throw err;
+  }
 };

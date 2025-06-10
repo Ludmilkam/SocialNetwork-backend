@@ -3,8 +3,8 @@ import { PrismaClientKnownRequestError } from "./generated/prisma/runtime/librar
 
 export const prisma = new PrismaClient();
 export const getErrorCode = (err: unknown) =>
-    err instanceof PrismaClientKnownRequestError && err.code;
+  err instanceof PrismaClientKnownRequestError && err.code;
 export enum ErrorCodes {
-    NotFound = "P2025",
-    AlreadyExists = "P2002",
+  NotFound = "P2025",
+  AlreadyExists = "P2002",
 }

@@ -14,12 +14,14 @@ app.use(
     methods: ["GET", "POST", "DELETE"],
   })
 );
-app.use(express.static('uploads'))
+app.use(express.static("uploads"));
 app.use(express.json());
 app.use(usersMiddlewares.authenticate);
 
 app.use("/api/v1", router);
 app.use(errorHandler);
 app.listen(Config.SERVER_PORT, Config.SERVER_HOST, () => {
-    console.log(`Server is running on http://${Config.SERVER_HOST}:${Config.SERVER_PORT}`);
+  console.log(
+    `Server is running on http://${Config.SERVER_HOST}:${Config.SERVER_PORT}`,
+  );
 });
