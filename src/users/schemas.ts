@@ -29,7 +29,19 @@ export const updateMeSchema = z.object({
 })
 
 export const updateUserSchema = z.object({
-    firstName: z.string(),
-    lastName: z.string(),
-    username: z.string()
+  firstName: z.string(),
+  lastName: z.string(),
+  username: z.string()
 })
+
+export const createAlbumSchema = z.object({
+  name: z.string().min(1, 'Album name is required'),
+  subject: z.string().min(1, 'Album subject is required'),
+  year: z.number().int().min(1900).max(new Date().getFullYear())
+})
+
+export const updateAlbumSchema = z.object({
+  name: z.string().min(1, 'Album name is required').optional(),
+  subject: z.string().min(1, 'Album subject is required').optional(),
+  year: z.number().int().min(1900).max(new Date().getFullYear()).optional()
+});

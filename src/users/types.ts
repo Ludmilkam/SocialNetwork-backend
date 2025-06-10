@@ -6,6 +6,8 @@ import {
   signUpSchema,
   updateMeSchema,
   updateUserSchema,
+  createAlbumSchema,
+  updateAlbumSchema
 } from "./schemas";
 
 export type AuthTokenPayload = { uid: number };
@@ -27,3 +29,5 @@ export type signUpInput = z.infer<typeof signUpSchema>;
 export type createUserInput = z.infer<typeof createUserSchema>;
 export type updateUserInput = z.infer<typeof updateUserSchema>;
 export type updateMeInput = z.infer<typeof updateMeSchema> & { avatarUrl?: string }
+export type createAlbumInput = z.infer<typeof createAlbumSchema>
+export type updateAlbumInput = z.infer<typeof updateAlbumSchema>

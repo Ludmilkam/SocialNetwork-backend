@@ -1,7 +1,7 @@
-import { User } from "./types";
+import { createAlbumInput, User } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
-import { Prisma } from "../generated/prisma";
+import { Album, Prisma } from "../generated/prisma";
 
 export class UsersRepository {
     async findUnique(
@@ -230,5 +230,54 @@ export class OtpEmailRepository {
 
     async deleteAllForEmail(email: string) {
         await prisma.otpEmail.deleteMany({ where: { email } });
+    }
+}
+
+export class AlbumRepository {
+    async findUnique(
+        where: Prisma.AlbumWhereUniqueInput,
+        options: Prisma.AlbumDefaultArgs = {}
+    ): Promise<Album> {
+        try {
+            return await prisma.album.findUniqueOrThrow({ where, ...options });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
+    }
+
+    async createAlbum(data: Prisma.AlbumCreateArgs["data"]): Promise<Album> {
+        return await prisma.album.create({
+            data: data
+        });
+    }
+
+    async deleteAlbum(albumId: number): Promise<void> {
+        try {
+            await prisma.album.delete({
+                where: { id: albumId }
+            });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
+    }
+
+    async updateAlbum(albumId: number, data: Prisma.AlbumUpdateArgs["data"]): Promise<Album> {
+        try {
+            return await prisma.album.update({
+                where: { id: albumId },
+                data: data
+            });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
     }
 }

@@ -1,15 +1,17 @@
 import {
     AuthTokenPayload,
+    createAlbumInput,
     createUserInput,
     ShowUser,
     ShowUserWithRelations,
     signInInput,
     signUpInput,
+    updateAlbumInput,
     updateMeInput,
     User,
 } from "./types";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
-import { OtpEmailRepository, UsersRepository } from "./repositories";
+import { AlbumRepository, OtpEmailRepository, UsersRepository } from "./repositories";
 import { compare, hash } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { StringValue } from "ms";
@@ -18,6 +20,7 @@ import { sendMail } from "../core/mailing";
 import { Config } from "../core/config";
 import ms from "ms";
 import { PostNotFoundError } from "../posts/services";
+import { Album } from "../generated/prisma";
 
 export class InvalidCredentialsError extends Error {
     constructor() {
@@ -54,19 +57,21 @@ export class UserNotFoundError extends Error {
     }
 }
 
-export class NotAllowed extends Error {
-    constructor() {
-        super("It`s not your post. You can`t delete it.");
+export class NotAllowedError extends Error {
+    constructor(msg: string) {
+        super(msg);
     }
 }
 
 export class UsersService {
     private usersRepo: UsersRepository;
+    private albumRepo: AlbumRepository;
     private otpRepo: OtpEmailRepository;
     private hashSalt: number;
 
     constructor() {
         this.usersRepo = new UsersRepository();
+        this.albumRepo = new AlbumRepository()
         this.otpRepo = new OtpEmailRepository();
         this.hashSalt = 10;
     }
@@ -257,6 +262,29 @@ export class UsersService {
             Here is your otp which you can use to confirm your email and continue
             in registration.\n${otp}`
         );
+    }
+    async deleteAlbum(albumId: number, currentUserId: number): Promise<void> {
+        const album = await this.albumRepo.findUnique({ id: albumId });
+
+        if (album.userId !== currentUserId) {
+            throw new NotAllowedError('Album does not belong to current user');
+        }
+
+        return this.albumRepo.deleteAlbum(albumId);
+    }
+    async updateAlbum(albumId: number, currentUserId: number, data: updateAlbumInput): Promise<Album> {
+        // First verify the album exists and belongs to the current user
+        const album = await this.albumRepo.findUnique({ id: albumId });
+
+        if (album.userId !== currentUserId) {
+            throw new NotAllowedError('Album does not belong to current user');
+        }
+
+        return this.albumRepo.updateAlbum(albumId, data);
+    }
+
+    async createAlbum(userId: number, data: createAlbumInput): Promise<Album> {
+        return this.albumRepo.createAlbum({ ...data, userId });
     }
 }
 

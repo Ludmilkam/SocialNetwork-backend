@@ -21,6 +21,9 @@ router.post("/requests/create", handlers.createFriendRequest)
 router.post("/requests/accept", handlers.acceptRequest)
 router.delete("/requests/decline/:fromUserId", handlers.declineRequest)
 router.delete("/delete-friend/:friendId", handlers.deleteFriend)
+router.delete("/albums/:albumId", handlers.deleteAlbum)
+router.patch("/albums/:albumId", handlers.updateAlbum)
+router.post("/albums/", handlers.createAlbum)
 
 
 router.get("/list-users", handlers.listUsers);
