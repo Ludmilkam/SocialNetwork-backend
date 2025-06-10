@@ -39,4 +39,7 @@ export class PostsRepository {
       throw err;
     }
   }
+  async getAllTags() {
+    return await prisma.tag.findMany({})
+  }
 }
