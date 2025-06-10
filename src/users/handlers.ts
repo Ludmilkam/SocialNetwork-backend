@@ -96,7 +96,7 @@ export class UsersHandlers {
 
   public listUsers = async (req: Request, res: Response) => {
     const users = await this.service.listUsers();
-    res.status(200).json(users);
+    res.status(200).json(getSuccededResponse(users));
   };
 
   public getUserById = async (req: Request, res: Response) => {
