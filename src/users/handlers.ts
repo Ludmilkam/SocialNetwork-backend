@@ -101,7 +101,7 @@ export class UsersHandlers {
 
   public getUserById = async (req: Request, res: Response) => {
     requireAdmin(res);
-    const userId = validateObjectId(req.params.id);
+    const userId = validateObjectId(req.params.userId);
     try {
       const user = await this.service.getUser(userId);
       res.status(200).json(getSuccededResponse(user));

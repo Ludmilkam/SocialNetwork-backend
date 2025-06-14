@@ -24,7 +24,8 @@ router.delete("/delete-friend/:friendId", handlers.deleteFriend)
 router.delete("/albums/:albumId", handlers.deleteAlbum)
 router.patch("/albums/:albumId", handlers.updateAlbum)
 router.post("/albums/", handlers.createAlbum)
-
+// router.get("/me/albums") усі альбоми юзера під акком якого ми зайшли
+router.get("/:userId", handlers.getUserById)
 
 router.get("/list-users", handlers.listUsers);
 

@@ -18,7 +18,8 @@ model User {
   photos              Media[]
   albums              Album[]
   ownFriendships      UserFriend[] @relation("UserOwnFriendships")
-  receivedFriendships UserFriend[] @relation("UserReceivedFriendships")
+  receivedFriendships UserFriend[] @relation("UserReceivedFriendships")  
+
 
   blockedUsers User[] @relation("UserBlocked")
   blockedBy    User?  @relation("UserBlocked", fields: [blockedById], references: [id])
