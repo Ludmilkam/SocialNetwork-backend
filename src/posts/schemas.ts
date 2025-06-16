@@ -7,5 +7,5 @@ export const createPostSchema = z.object({
     .min(1, "The title must contain at least 1 characters"),
   subject: z.string(),
   body: z.string(),
-  link: z.string().url(),
+  links: z.array(z.string().url()).optional(),
 });

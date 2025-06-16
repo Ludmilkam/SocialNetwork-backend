@@ -20,6 +20,7 @@ export class PostsHandlers {
 
   public createPost = async (req: Request, res: Response): Promise<void> => {
     const userId = requireAuthorized(res);
+    console.log("GOT REQUEST BODY", req.body)
     const body = validateRequest(req, createPostSchema);
     const media = req.files
       ? (req.files as Express.Multer.File[]).map((item) => ({
