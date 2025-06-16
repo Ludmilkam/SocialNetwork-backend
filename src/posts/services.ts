@@ -21,6 +21,7 @@ export class PostsService {
         ...data,
         author: { connect: { id: userId } },
         media: { create: data.media },
+        links: data.links ? { create: data.links.map(url => ({ url })) } : undefined
       });
       return { ...newPost };
     } catch (err) {

@@ -49,4 +49,3 @@ model UserFriend {
 
   @@id([fromUserId, toUserId])
 }
-
