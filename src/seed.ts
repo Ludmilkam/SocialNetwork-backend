@@ -56,35 +56,37 @@ async function main() {
       }),
     ),
   );
-  let _usedUserIds: number[][] = [];
-  const getUniqueFromUserToUserPairIds = (currUserId: number): number => {
-    console.log("Count records", _usedUserIds.length)
-    let userId = faker.helpers.arrayElement(users).id;
-    const pairIds = [currUserId, userId];
-    console.log(pairIds)
-    while (
-      currUserId === userId ||
-      _usedUserIds.some(
-        (el) =>
-          (el[0] == currUserId && el[1] == userId) ||
-          (el[1] == currUserId && el[0] == userId),
-      )
-    ) {
-      userId = faker.helpers.arrayElement(users).id;
-    }
-    _usedUserIds.push(pairIds);
-    return userId;
-  };
+const _usedUserIds: number[][] = [];
 
-  console.log("Creating friends for first x users")
-  await Promise.all(users.slice(0, 10).map((user) =>
-    prisma.userFriend.createMany(
-      {
-        data: Array.from({ length: faker.number.int(5) })
-          .map(() => ({ fromUserId: user.id, toUserId: getUniqueFromUserToUserPairIds(user.id), isApproved: faker.datatype.boolean() }))
-      }
+const getUniqueFromUserToUserPairIds = (currUserId: number): number => {
+  let userId = faker.helpers.arrayElement(users).id;
+  while (
+    currUserId === userId ||
+    _usedUserIds.some(
+      ([a, b]) =>
+        (a === currUserId && b === userId) ||
+        (b === currUserId && a === userId)
     )
-  ))
+  ) {
+    userId = faker.helpers.arrayElement(users).id;
+  }
+  _usedUserIds.push([currUserId, userId]);
+  return userId;
+};
+
+console.log("Creating friends for first x users");
+
+for (const user of users.slice(0, 5)) {
+  const friendsData = Array.from({ length: faker.number.int({ min: 1, max: 5 }) }).map(() => ({
+    fromUserId: user.id,
+    toUserId: getUniqueFromUserToUserPairIds(user.id),
+    isApproved: faker.datatype.boolean(),
+  }));
+
+  await prisma.userFriend.createMany({
+    data: friendsData
+  });
+}
 
   console.log("Creating media");
   const mediaItems = await Promise.all(
