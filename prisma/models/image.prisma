@@ -1,0 +1,13 @@
+model Image {
+  id          Int      @id @default(autoincrement())
+  filename    String 
+  file        String 
+  uploaded_at DateTime @default(now())
+  post_id     Int?
+
+  // Relations
+  post   Post?        @relation(fields: [post_id], references: [id])
+  albums AlbumImage[]
+
+  @@map("post_app_image")
+}

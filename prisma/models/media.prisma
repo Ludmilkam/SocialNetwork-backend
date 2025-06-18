@@ -1,9 +1,0 @@
-model Image {
-  id     Int       @id @default(autoincrement())
-  filename String
-  file    String
-  uploaded_at DateTime     @default(now())
-  posts  Post[]
-  users  User[]
-  albums Album[]
-}

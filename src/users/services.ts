@@ -68,12 +68,14 @@ export class UsersService {
     private albumRepo: AlbumRepository;
     private otpRepo: OtpEmailRepository;
     private hashSalt: number;
+    private otpTTL: StringValue
 
     constructor() {
         this.usersRepo = new UsersRepository();
         this.albumRepo = new AlbumRepository()
         this.otpRepo = new OtpEmailRepository();
         this.hashSalt = 10;
+        this.otpTTL = Config.OTP_TTL
     }
 
     private async withHashedPassword<T>(
@@ -111,7 +113,7 @@ export class UsersService {
     async createUser(data: createUserInput): Promise<ShowUser> {
         const userData = await this.withHashedPassword(data);
         try {
-            const newUser = await this.usersRepo.create(userData);
+            const newUser = await this.usersRepo.create({ ...userData, username: "" });
             return { ...newUser, password: undefined };
         } catch (err) {
             if (err instanceof AlreadyExistsError) {
@@ -120,7 +122,6 @@ export class UsersService {
             throw err;
         }
     }
-
     async signUp(
         data: signUpInput
     ): Promise<{ user: ShowUser; token: string }> {
@@ -135,7 +136,8 @@ export class UsersService {
             }
             throw err;
         }
-        if (otpWithEmail.expiresAt < new Date()) {
+        const expiresAt = otpWithEmail.created_at.getTime() + ms(this.otpTTL)
+        if (new Date().getTime() >= expiresAt) {
             throw new OtpExpiredError();
         }
         await this.otpRepo.deleteAllForEmail(data.email);
@@ -150,7 +152,7 @@ export class UsersService {
         return { user, token: token };
     }
 
-    async getUser(userId: number): Promise<ShowUserWithRelations> {
+    async getUser(userId: number) {
         try {
             const user = await this.usersRepo.getByIdWithRelations(userId);
             return { ...user, password: undefined };
@@ -174,16 +176,16 @@ export class UsersService {
         }
     }
 
-    async blockUser(userId: number, blockedUserId: number) {
-        try {
-            return this.usersRepo.block(userId, blockedUserId);
-        } catch (err) {
-            if (err instanceof NotFoundError) {
-                throw new PostNotFoundError();
-            }
-            throw err;
-        }
-    }
+    // async blockUser(userId: number, blockedUserId: number) {
+    //     try {
+    //         return this.usersRepo.block(userId, blockedUserId);
+    //     } catch (err) {
+    //         if (err instanceof NotFoundError) {
+    //             throw new PostNotFoundError();
+    //         }
+    //         throw err;
+    //     }
+    // }
 
     async acceptRequest(fromUserId: number, toUserId: number) {
         return this.usersRepo.acceptRequest(fromUserId, toUserId);
@@ -248,25 +250,20 @@ export class UsersService {
         if (user) {
             throw new OtpGenerationForbidden();
         }
-        const otp = generate(Config.OTP_LENGTH);
-        const expiresAt = new Date();
-        const ONE_MIN_MS = 60000;
-        expiresAt.setMinutes(
-            expiresAt.getMinutes() + ms(Config.OTP_TTL) / ONE_MIN_MS
-        );
-        await this.otpRepo.create({ otp, email, expiresAt });
+        const code = generate(Config.OTP_LENGTH);
+        await this.otpRepo.create({ code, username: email });
         await sendMail(
             email,
             "Email confirmation",
             `Hi dear user.
             Here is your otp which you can use to confirm your email and continue
-            in registration.\n${otp}`
+            in registration.\n${code}`
         );
     }
     async deleteAlbum(albumId: number, currentUserId: number): Promise<void> {
         const album = await this.albumRepo.findUnique({ id: albumId });
 
-        if (album.userId !== currentUserId) {
+        if (album.profile_id !== currentUserId) {
             throw new NotAllowedError('Album does not belong to current user');
         }
 
@@ -276,15 +273,15 @@ export class UsersService {
         // First verify the album exists and belongs to the current user
         const album = await this.albumRepo.findUnique({ id: albumId });
 
-        if (album.userId !== currentUserId) {
+        if (album.profile_id !== currentUserId) {
             throw new NotAllowedError('Album does not belong to current user');
         }
 
         return this.albumRepo.updateAlbum(albumId, data);
     }
 
-    async createAlbum(userId: number, data: createAlbumInput): Promise<Album> {
-        return this.albumRepo.createAlbum({ ...data, userId });
+    async createAlbum(currentUserId: number, data: createAlbumInput): Promise<Album> {
+        return this.albumRepo.createAlbum({ ...data, profile_id: currentUserId });
     }
 }
 

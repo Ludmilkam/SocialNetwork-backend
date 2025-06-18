@@ -20,7 +20,7 @@ export class PostsService {
       const newPost = await this.postsRepo.create({
         ...data,
         author: { connect: { id: userId } },
-        media: { create: data.media },
+        images: { create: data.images },
         links: data.links ? { create: data.links.map(url => ({ url })) } : undefined
       });
       return { ...newPost };

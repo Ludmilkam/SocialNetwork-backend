@@ -20,7 +20,7 @@ export type ShowUser<
   S extends boolean | null | undefined | Prisma.UserDefaultArgs = {},
 > = Omit<User<S>, "password"> & { password: undefined };
 export type ShowUserWithRelations = ShowUser<{
-  include: { createdPosts: true };
+  include: { profile: { include: { posts: true } } };
 }>;
 
 

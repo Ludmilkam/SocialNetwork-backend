@@ -37,7 +37,7 @@ export const updateUserSchema = z.object({
 export const createAlbumSchema = z.object({
   name: z.string().min(1, 'Album name is required'),
   subject: z.string().min(1, 'Album subject is required'),
-  year: z.number().int().min(1900).max(new Date().getFullYear())
+  topic_id: z.number()
 })
 
 export const updateAlbumSchema = z.object({

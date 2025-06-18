@@ -31,7 +31,6 @@ router.get("/list-users", handlers.listUsers);
 // router.post("/block-user", handlers.blockUser)
 
 // router.post("/send-message")
-router.post("/admin/create", handlers.createUser);
 router.get("/:id", handlers.getUserById)
 
 export default router;

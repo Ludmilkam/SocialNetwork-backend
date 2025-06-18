@@ -1,22 +1,45 @@
-
 model ChatGroup {
-  id     Int       @id @default(autoincrement())
-  name String
-  members User[] @relation("chat_app_chatgroup_members")
+  id               Int     @id @default(autoincrement())
+  name             String // max_length=255
   is_personal_chat Boolean @default(false)
-  admin_id Int
-  admin User @relation(fields: [admin_id], references: [id])
-  avatar String?
-  messages ChatMessage[] @relation("chat_app_chatmessage")
+  admin_id         Int
+  avatar           String? // upload_to='images/group_avatars'
+
+  // Relations
+  admin    Profile           @relation("chat_group_admin", fields: [admin_id], references: [id], onDelete: Cascade)
+  members  ChatGroupMember[]
+  messages ChatMessage[]
+
+  @@map("chat_app_chatgroup")
+}
+
+// Junction table for ChatGroup members (M2M relation)
+model ChatGroupMember {
+  id           Int @id @default(autoincrement())
+  chatgroup_id Int
+  profile_id   Int
+
+  // Relations
+  chatgroup ChatGroup @relation(fields: [chatgroup_id], references: [id], onDelete: Cascade)
+  profile   Profile   @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@unique([chatgroup_id, profile_id])
+  @@map("chat_app_chatgroup_members")
 }
 
 model ChatMessage {
-  id     Int       @id @default(autoincrement())
-  content String
-  author_id Int
-  author User @relation(fields: [author_id], references: [id])
-  chat_group_id Int
-  chat_group ChatGroup @relation(fields: [chat_group_id], references: [id])
-  sent_at DateTime     @default(now())
-  attached_image String?
+  id             Int      @id @default(autoincrement())
+  content        String // max_length=4096
+  author_id      Int
+  chat_group_id  Int
+  sent_at        DateTime @default(now())
+  attached_image String? // upload_to='images/messages'
+
+  // Relations
+  author     User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  chat_group ChatGroup @relation(fields: [chat_group_id], references: [id], onDelete: Cascade)
+  Profile    Profile?  @relation(fields: [profileId], references: [id])
+  profileId  Int?
+
+  @@map("chat_app_chatmessage")
 }

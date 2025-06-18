@@ -113,20 +113,6 @@ export class UsersHandlers {
     }
   };
 
-  public createUser = async (req: Request, res: Response): Promise<void> => {
-    requireAdmin(res);
-    const body = validateRequest(req, createUserSchema);
-
-    try {
-      const user = await this.service.createUser(body);
-      res.status(200).json(getSuccededResponse(user));
-    } catch (err) {
-      if (err instanceof UserAlreadyExistsError) {
-        throw new HTTPConflictError(err.message);
-      }
-      throw err;
-    }
-  };
 
   public updateUser = async (req: Request, res: Response): Promise<void> => {
     const body = validateRequest(req, updateUserSchema);
@@ -142,18 +128,18 @@ export class UsersHandlers {
     }
   };
 
-  public blockUser = async (req: Request, res: Response): Promise<void> => {
-    const { userId, blockedUserId } = req.body;
-    try {
-      await this.service.blockUser(Number(userId), Number(blockedUserId));
-      res.status(204).send();
-    } catch (err) {
-      if (err instanceof UserNotFoundError) {
-        throw new HTTPNotFoundError("User not found");
-      }
-      throw err;
-    }
-  };
+  // public blockUser = async (req: Request, res: Response): Promise<void> => {
+  //   const { userId, blockedUserId } = req.body;
+  //   try {
+  //     await this.service.blockUser(Number(userId), Number(blockedUserId));
+  //     res.status(204).send();
+  //   } catch (err) {
+  //     if (err instanceof UserNotFoundError) {
+  //       throw new HTTPNotFoundError("User not found");
+  //     }
+  //     throw err;
+  //   }
+  // };
 
   public acceptRequest = async (
     req: Request,

@@ -5,7 +5,6 @@ import { requireAuthorized } from "../users/utils";
 import { createPostSchema } from "./schemas";
 import { PostNotFoundError, PostsService, postsService } from "./services";
 import { Config } from "../core/config";
-import { MediaType } from "../generated/prisma";
 import { HTTPNotFoundError } from "../core/http-errors";
 
 export class PostsHandlers {
@@ -21,15 +20,15 @@ export class PostsHandlers {
   public createPost = async (req: Request, res: Response): Promise<void> => {
     const userId = requireAuthorized(res);
     const body = validateRequest(req, createPostSchema);
-    const media = req.files
+    const images = req.files
       ? (req.files as Express.Multer.File[]).map((item) => ({
-        url: Config.getMediaServeUrl() + "/" + item.filename,
-        type: MediaType.IMAGE,
+        file: Config.getMediaServeUrl(),
+        filename: item.filename
       }))
       : [];
     const post = await this.service.createPost(userId, {
       ...body,
-      media,
+      images,
     });
     res.status(200).json(getSuccededResponse(post));
   };

@@ -1,12 +1,30 @@
-
 model Album {
-  id      Int     @id @default(autoincrement())
-  user    User    @relation(fields: [user_id], references: [id])
-  user_id  Int
-  name    String
-  shown Boolean @default(true)
-  topic Tag
-  created_at           DateTime     @default(now())
-  preview_image String?
-  images  Image[] @relation("post_app_album_images")
+  id            Int      @id @default(autoincrement())
+  name          String // max_length=255
+  created_at    DateTime @default(now())
+  preview_image String? // upload_to='images/album_previews'
+  shown         Boolean  @default(true)
+  topic_id      Int
+  profile_id Int
+
+  // Relations
+  topic  Tag         @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  images AlbumImage[]
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+
+  @@map("post_app_album")
+}
+
+// Junction table for Album images (M2M relation)
+model AlbumImage {
+  id       Int @id @default(autoincrement())
+  album_id Int
+  image_id Int
+
+  // Relations
+  album Album @relation(fields: [album_id], references: [id], onDelete: Cascade)
+  image Image @relation(fields: [image_id], references: [id], onDelete: Cascade)
+
+  @@unique([album_id, image_id])
+  @@map("post_app_album_images")
 }
