@@ -1,12 +1,8 @@
-enum MediaType {
-  IMAGE
-  VIDEO
-}
-
-model Media {
+model Image {
   id     Int       @id @default(autoincrement())
-  type   MediaType @default(IMAGE)
-  url    String
+  filename String
+  file    String
+  uploaded_at DateTime     @default(now())
   posts  Post[]
   users  User[]
   albums Album[]

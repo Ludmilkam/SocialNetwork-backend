@@ -1,5 +1,8 @@
-model OtpEmail {
-  otp       String   @id
+model VerificationCode {
+  id     Int       @id @default(autoincrement())
+  code       String   
   email     String
-  expiresAt DateTime
+  created_at DateTime @default(now())
+
+  @@map("user_app_verificationcode")
 }

@@ -1,0 +1,12 @@
+
+model Album {
+  id      Int     @id @default(autoincrement())
+  user    User    @relation(fields: [user_id], references: [id])
+  user_id  Int
+  name    String
+  shown Boolean @default(true)
+  topic Tag
+  created_at           DateTime     @default(now())
+  preview_image String?
+  images  Image[] @relation("post_app_album_images")
+}
