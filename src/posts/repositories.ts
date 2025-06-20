@@ -8,7 +8,7 @@ export class PostsRepository {
     return await prisma.post.findMany({
       include: {
         tags: true,
-        author: true,
+        author: { include: { profile: { include: { avatars: true } } } },
         images: true,
         _count: { select: { likes: true, views: true } },
       },

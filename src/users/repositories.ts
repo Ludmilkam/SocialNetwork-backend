@@ -39,7 +39,8 @@ export class UsersRepository {
                                     },
                                 }
                             },
-                            albums: { include: { images: true } }
+                            albums: { include: { images: true } },
+                            avatars: true
                         },
                     },
                 },
@@ -75,6 +76,7 @@ export class UsersRepository {
                     id: userId,
                 },
             },
+            include: { profile: { include: { avatars: true } } }
         });
     }
     async getFriendRequestsForUser(userId: number) {
@@ -107,6 +109,7 @@ export class UsersRepository {
                     id: userId,
                 },
             },
+            include: { profile: { include: { avatars: true } } }
         });
     }
 
@@ -125,7 +128,9 @@ export class UsersRepository {
     }
 
     async list(): Promise<User[]> {
-        return await prisma.user.findMany();
+        return await prisma.user.findMany({
+            include: { profile: { include: { avatars: true } } }
+        });
     }
 
     async create(data: Prisma.UserCreateInput): Promise<User> {
