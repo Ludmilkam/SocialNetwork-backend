@@ -112,6 +112,12 @@ export class UsersRepository {
             include: { profile: { include: { avatars: true } } }
         });
     }
+    async getAllWithoutFriendshipWith(userId: number) {
+        return await prisma.user.findMany({
+            where: { profile: { friendship_sent_request: { none: { profile2_id: userId } }, friendship_accepted_request: { none: { profile1_id: userId } } } },
+            include: { profile: { include: { avatars: true } } }
+        })
+    }
 
     async updateById(
         userId: number,
@@ -285,4 +291,5 @@ export class AlbumRepository {
             throw err;
         }
     }
+
 }

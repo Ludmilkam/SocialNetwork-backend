@@ -27,6 +27,7 @@ router.post("/albums/", handlers.createAlbum)
 
 
 router.get("/list-users", handlers.listUsers);
+router.get("/recommendations", handlers.listRecommendedUsers)
 
 // router.post("/block-user", handlers.blockUser)
 

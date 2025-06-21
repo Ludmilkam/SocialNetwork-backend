@@ -212,8 +212,11 @@ export class UsersService {
     }
 
     async listUsers(): Promise<User[]> {
-        const users = await this.usersRepo.list();
-        return users.map((user) => ({ ...user }));
+        return await this.usersRepo.list();
+    }
+
+    async listRecommendedUsers(currUserId: number) {
+        return await this.usersRepo.getAllWithoutFriendshipWith(currUserId)
     }
 
     async deletePost(userId: number, postId: number): Promise<void> {

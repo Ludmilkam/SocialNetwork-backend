@@ -99,6 +99,12 @@ export class UsersHandlers {
     res.status(200).json(getSuccededResponse(users));
   };
 
+  public listRecommendedUsers = async (req: Request, res: Response) => {
+    const userId = requireAuthorized(res)
+    const users = await this.service.listRecommendedUsers(userId);
+    res.status(200).json(getSuccededResponse(users));
+  };
+
   public getUserById = async (req: Request, res: Response) => {
     requireAdmin(res);
     const userId = validateObjectId(req.params.id);
@@ -187,7 +193,7 @@ export class UsersHandlers {
         fromUserId,
         toUserId
       );
-      res.json(getSuccededResponse(result));
+      res.json(getSuccededResponse({ id: result.id }));
     } catch (err) {
       res.status(400).json({ success: false, message: err });
     }
