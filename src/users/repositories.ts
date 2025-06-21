@@ -88,23 +88,22 @@ export class UsersRepository {
 
         return await prisma.user.findMany({
             where: {
-                OR: [
-                    {
-                        profile: {
-                            friendship_sent_request: {
-                                some: { profile1_id: userId, accepted: false },
-                            },
-                        }
-                    },
-                    {
-                        profile: {
+
+                profile: {
+                    OR: [
+                        {
                             friendship_sent_request: {
                                 some: { profile2_id: userId, accepted: false },
                             },
+                        },
+                        {
+                            friendship_accepted_request: {
+                                some: { profile1_id: userId, accepted: false },
+                            },
                         }
-                    },
-
-                ],
+                    ]
+                }
+                ,
                 NOT: {
                     id: userId,
                 },

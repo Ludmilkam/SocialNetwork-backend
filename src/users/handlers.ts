@@ -187,7 +187,9 @@ export class UsersHandlers {
   public createFriendRequest = async (req: Request, res: Response): Promise<void> => {
     const fromUserId = requireAuthorized(res)
     const { toUserId } = req.body;
-
+    if (!toUserId) {
+      throw new HTTPBadRequestError("toUserId is required")
+    }
     try {
       const result = await this.service.createFriendRequest(
         fromUserId,
