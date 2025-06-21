@@ -279,12 +279,17 @@ export class UsersHandlers {
   };
 
   public updateAlbum = async (req: Request, res: Response): Promise<void> => {
+    const images = req.files
+      ? (req.files as Express.Multer.File[]).map((item) => ({
+        file: Config.getMediaServeUrl(),
+        filename: item.filename
+      }))
+      : [];
     try {
       const currUserId = requireAuthorized(res);
       const albumId = Number(req.params.albumId);
-      console.log("UPDATION DATA", req.body)
       const body = validateRequest(req, updateAlbumSchema);
-      const result = await this.service.updateAlbum(albumId, currUserId, body);
+      const result = await this.service.updateAlbum(albumId, currUserId, { ...body, images });
       res.json(getSuccededResponse(result));
     } catch (err) {
       if (err instanceof NotAllowedError) {

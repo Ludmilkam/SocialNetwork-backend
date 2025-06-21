@@ -20,7 +20,7 @@ import { sendMail } from "../core/mailing";
 import { Config } from "../core/config";
 import ms from "ms";
 import { PostNotFoundError } from "../posts/services";
-import { Album } from "../generated/prisma";
+import { Album, AlbumImage } from "../generated/prisma";
 
 export class InvalidCredentialsError extends Error {
     constructor() {
@@ -285,7 +285,7 @@ export class UsersService {
             throw new NotAllowedError('Album does not belong to current user');
         }
 
-        return this.albumRepo.updateAlbum(albumId, data);
+        return await this.albumRepo.updateAlbum(albumId, data);
     }
 
     async createAlbum(currentUserId: number, data: createAlbumInput): Promise<Album> {

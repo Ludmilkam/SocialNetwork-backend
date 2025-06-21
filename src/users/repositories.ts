@@ -1,4 +1,4 @@
-import { createAlbumInput, User } from "./types";
+import { createAlbumInput, updateAlbumInput, User } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { Album, Prisma } from "../generated/prisma";
@@ -39,7 +39,7 @@ export class UsersRepository {
                                     },
                                 }
                             },
-                            albums: { include: { images: true, topic: true } },
+                            albums: { include: { images: { include: { image: true } }, topic: true } },
                             avatars: true
                         },
                     },
@@ -291,11 +291,11 @@ export class AlbumRepository {
         }
     }
 
-    async updateAlbum(albumId: number, data: Prisma.AlbumUpdateArgs["data"]): Promise<Album> {
+    async updateAlbum(albumId: number, data: updateAlbumInput): Promise<Album> {
         try {
             return await prisma.album.update({
                 where: { id: albumId },
-                data: data
+                data: { ...data, images: { create: data.images.map(el => ({ image: { create: el } })) } }
             });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {

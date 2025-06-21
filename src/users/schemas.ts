@@ -44,5 +44,5 @@ export const updateAlbumSchema = z.object({
   name: z.string().min(1, 'Album name is required').optional(),
   subject: z.string().min(1, 'Album subject is required').optional(),
   year: z.coerce.number().int().min(1900).max(new Date().getFullYear()).optional(),
-  shown: z.coerce.boolean().optional(),
+  shown: z.string().toLowerCase().transform((x) => x === 'true').pipe(z.boolean()),
 });
