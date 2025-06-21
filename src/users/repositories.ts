@@ -175,16 +175,30 @@ export class UsersRepository {
         });
     }
 
-    async declineRequest(fromUserId: number, toUserId: number) {
-        return prisma.friendship.delete({
-            where: { profile1_id_profile2_id: { profile1_id: fromUserId, profile2_id: toUserId } },
-        });
+    async deleteRequest(fromUserId: number, toUserId: number) {
+        try {
+            return await prisma.friendship.delete({
+                where: { profile1_id_profile2_id: { profile1_id: fromUserId, profile2_id: toUserId } },
+            });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
     }
 
     async deleteFriend(fromUserId: number, toUserId: number) {
-        return prisma.friendship.delete({
-            where: { profile1_id_profile2_id: { profile1_id: fromUserId, profile2_id: toUserId } },
-        });
+        try {
+            return await prisma.friendship.delete({
+                where: { profile1_id_profile2_id: { profile1_id: fromUserId, profile2_id: toUserId } },
+            });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
     }
 
     async createFriendRequest(fromUserId: number, toUserId: number) {

@@ -161,9 +161,9 @@ export class UsersHandlers {
     req: Request,
     res: Response
   ): Promise<void> => {
-    const toUserId = requireAuthorized(res)
-    const fromUserId = Number(req.params.fromUserId);
-    await this.service.declineRequest(fromUserId, toUserId);
+    const firstUserId = requireAuthorized(res)
+    const secondUserId = Number(req.params.fromUserId);
+    await this.service.declineRequest(firstUserId, secondUserId);
     res.status(204).send();
   };
 

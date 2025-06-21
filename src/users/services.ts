@@ -191,8 +191,15 @@ export class UsersService {
         return this.usersRepo.acceptRequest(fromUserId, toUserId);
     }
 
-    async declineRequest(fromUserId: number, toUserId: number) {
-        return this.usersRepo.declineRequest(fromUserId, toUserId);
+    async declineRequest(firstUserId: number, secondUserId: number) {
+        try {
+            return await this.usersRepo.deleteRequest(firstUserId, secondUserId);
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                return await this.usersRepo.deleteRequest(firstUserId, secondUserId);
+            }
+            throw err;
+        }
     }
 
     async deleteFriend(friendId: number, currentUserId: number) {
@@ -236,9 +243,7 @@ export class UsersService {
     }
 
     async friendRequests(userId: number): Promise<User[]> {
-        const friendRequests =
-            await this.usersRepo.getFriendRequestsForUser(userId);
-        return friendRequests.map((request) => ({ ...request }));
+        return await this.usersRepo.getFriendRequestsForUser(userId);
     }
 
     async sendOTP(email: string) {
