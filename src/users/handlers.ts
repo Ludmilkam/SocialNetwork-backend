@@ -282,10 +282,14 @@ export class UsersHandlers {
     try {
       const currUserId = requireAuthorized(res);
       const albumId = Number(req.params.albumId);
+      console.log("UPDATION DATA", req.body)
       const body = validateRequest(req, updateAlbumSchema);
       const result = await this.service.updateAlbum(albumId, currUserId, body);
       res.json(getSuccededResponse(result));
     } catch (err) {
+      if (err instanceof NotAllowedError) {
+        throw new HTTPForbiddenError(err.message)
+      }
       throw err;
     }
   };

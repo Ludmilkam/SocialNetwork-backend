@@ -22,7 +22,7 @@ router.post("/requests/accept", handlers.acceptRequest)
 router.delete("/requests/decline/:fromUserId", handlers.declineRequest)
 router.delete("/delete-friend/:friendId", handlers.deleteFriend)
 router.delete("/albums/:albumId", handlers.deleteAlbum)
-router.patch("/albums/:albumId", handlers.updateAlbum)
+router.patch("/albums/:albumId", upload.array("images", 30), handlers.updateAlbum)
 router.post("/albums/", handlers.createAlbum)
 
 

@@ -39,7 +39,7 @@ export class UsersRepository {
                                     },
                                 }
                             },
-                            albums: { include: { images: true } },
+                            albums: { include: { images: true, topic: true } },
                             avatars: true
                         },
                     },
