@@ -39,15 +39,10 @@ export class PostsService {
     }
   }
   async listPosts() {
-    const posts = await this.postsRepo.getAll();
-    return posts.map((post) => ({
-      ...post,
-      author: { ...post.author, password: undefined },
-    }));
+    return await this.postsRepo.getAll();
   }
   async listTags() {
-    const tags = await this.postsRepo.getAllTags()
-    return tags.map((tag) => ({ ...tag }))
+    return await this.postsRepo.getAllTags()
   }
 }
 

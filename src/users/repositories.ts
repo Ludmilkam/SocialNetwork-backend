@@ -22,8 +22,12 @@ export class UsersRepository {
     }
 
     async getByIdWithRelations(
-        id: number
+        id: number, shownOnly?: boolean
     ): Promise<User<{ include: { profile: {} } }>> {
+        const albumsOptions: Prisma.Profile$albumsArgs = { include: { images: { include: { image: true } }, topic: true } }
+        if (shownOnly) {
+            albumsOptions.where = { shown: true }
+        }
         try {
             return await prisma.user.findUniqueOrThrow({
                 where: { id },
@@ -32,15 +36,15 @@ export class UsersRepository {
                         include: {
                             posts: {
                                 include: {
-                                    tags: true,
+                                    tags: { include: { tag: true } },
                                     images: true,
                                     _count: {
                                         select: { likes: true, views: true },
                                     },
                                 }
                             },
-                            albums: { include: { images: { include: { image: true } }, topic: true } },
-                            avatars: true
+                            albums: albumsOptions,
+                            avatars: shownOnly ? { where: { shown: true } } : true,
                         },
                     },
                 },
@@ -52,6 +56,9 @@ export class UsersRepository {
             throw err;
         }
     }
+    async getFriendsCountForUser(userId: number) {
+        return await prisma.friendship.count({ where: { OR: [{ profile1_id: userId }, { profile2_id: userId }], accepted: true } })
+    }
     async getFriendsForUser(userId: number) {
         // get all friendship relations initiated by `userId` itself or to him from other user
         return await prisma.user.findMany({
@@ -60,21 +67,18 @@ export class UsersRepository {
                     {
                         profile: {
                             friendship_sent_request: {
-                                some: { profile1_id: userId, accepted: true },
+                                some: { profile2_id: userId, accepted: true },
                             },
                         }
                     },
                     {
                         profile: {
-                            friendship_sent_request: {
-                                some: { profile2_id: userId, accepted: true },
+                            friendship_accepted_request: {
+                                some: { profile1_id: userId, accepted: true },
                             },
                         }
                     },
                 ],
-                NOT: {
-                    id: userId,
-                },
             },
             include: { profile: { include: { avatars: true } } }
         });

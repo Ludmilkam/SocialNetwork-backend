@@ -152,13 +152,26 @@ export class UsersService {
         return { user, token: token };
     }
 
-    async getUser(userId: number) {
+    async getCurrentUser(userId: number) {
         try {
             const user = await this.usersRepo.getByIdWithRelations(userId);
             return { ...user, password: undefined };
         } catch (err) {
             if (err instanceof NotFoundError) {
                 throw new InvalidCredentialsError();
+            }
+            throw err;
+        }
+    }
+
+    async getUserById(userId: number) {
+        try {
+            const user = await this.usersRepo.getByIdWithRelations(userId, true);
+            const friendsCount = await this.usersRepo.getFriendsCountForUser(userId)
+            return { ...user, friendsCount, password: undefined };
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new UserNotFoundError(`id=${userId}`);
             }
             throw err;
         }

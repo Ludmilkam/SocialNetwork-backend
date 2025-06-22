@@ -29,7 +29,7 @@ import {
   updateUserSchema,
 } from "./schemas";
 import { getSuccededResponse } from "../core/utils";
-import { requireAdmin, requireAuthorized } from "./utils";
+import { requireAuthorized } from "./utils";
 import { Config } from "../core/config";
 import { PostNotFoundError } from "../posts/services";
 
@@ -71,7 +71,7 @@ export class UsersHandlers {
   public getMe = async (req: Request, res: Response) => {
     try {
       const userId = requireAuthorized(res);
-      const user = await this.service.getUser(userId);
+      const user = await this.service.getCurrentUser(userId);
       res.status(200).json(getSuccededResponse(user));
     } catch (err) {
       if (err instanceof InvalidCredentialsError)
@@ -106,10 +106,10 @@ export class UsersHandlers {
   };
 
   public getUserById = async (req: Request, res: Response) => {
-    requireAdmin(res);
+    requireAuthorized(res)
     const userId = validateObjectId(req.params.id);
     try {
-      const user = await this.service.getUser(userId);
+      const user = await this.service.getUserById(userId);
       res.status(200).json(getSuccededResponse(user));
     } catch (err) {
       if (err instanceof InvalidCredentialsError) {
@@ -118,7 +118,6 @@ export class UsersHandlers {
       throw err;
     }
   };
-
 
   public updateUser = async (req: Request, res: Response): Promise<void> => {
     const body = validateRequest(req, updateUserSchema);
@@ -202,8 +201,7 @@ export class UsersHandlers {
   };
 
   public deletePost = async (req: Request, res: Response): Promise<void> => {
-    requireAdmin(res);
-    const userId = validateObjectId(req.params.userId);
+    const userId = requireAuthorized(res);
     const postId = validateObjectId(req.params.postId);
     try {
       const post = await this.service.deletePost(userId, postId);
