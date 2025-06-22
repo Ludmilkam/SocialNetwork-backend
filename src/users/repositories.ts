@@ -1,4 +1,4 @@
-import { createAlbumInput, updateAlbumInput, User } from "./types";
+import { createAlbumInput, updateAlbumInput, updateMeInput, User } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { Album, Prisma } from "../generated/prisma";
@@ -124,10 +124,20 @@ export class UsersRepository {
 
     async updateById(
         userId: number,
-        data: Prisma.UserUpdateInput
+        data: updateMeInput
     ): Promise<User> {
+        const profileUpdate: Prisma.ProfileUpdateWithoutUserInput = {}
+        if (data.avatarUrl) {
+            // mark all previous avatars as not active anymore
+            await prisma.avatar.updateMany({ data: { active: false }, where: { profile_id: userId } })
+            profileUpdate.avatars = { create: { image: data.avatarUrl } }
+        }
+        if (data.date_of_birth) {
+            profileUpdate.date_of_birth = data.date_of_birth
+        }
+        const updateInput: Prisma.UserUpdateInput = { ...{ ...data, avatarUrl: undefined, date_of_birth: undefined }, profile: { update: profileUpdate } }
         try {
-            return await prisma.user.update({ where: { id: userId }, data });
+            return await prisma.user.update({ where: { id: userId }, data: updateInput });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();

@@ -21,11 +21,11 @@ export const createUserSchema = signUpSchema;
 // export const updateUserSchema = signUpSchema.omit({ password: true });
 
 export const updateMeSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
   email: z.string().optional(),
   username: z.string().optional(),
-  birthDate: z.string().optional(),
+  date_of_birth: z.string().date().transform(val => new Date(val)).optional(),
 })
 
 export const updateUserSchema = z.object({
