@@ -5,14 +5,12 @@ model Post {
   author_id Int
 
   // Relations
-  author    User       @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  author    Profile       @relation(fields: [author_id], references: [id], onDelete: Cascade)
   images    Image[]
   views     PostView[]
   likes     PostLike[]
   tags      PostTag[]
   links     Link[]
-  Profile   Profile?   @relation(fields: [profileId], references: [id])
-  profileId Int?
 
   @@map("post_app_post")
 }
@@ -20,15 +18,13 @@ model Post {
 model PostView {
   id      Int @id @default(autoincrement())
   post_id Int
-  user_id Int
 
   // Relations
   post      Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  Profile   Profile? @relation(fields: [profileId], references: [id])
-  profileId Int?
+  profile   Profile @relation(fields: [profile_id], references: [id])
+  profile_id Int
 
-  @@unique([post_id, user_id])
+  @@unique([post_id, profile_id])
   @@map("post_app_post_views")
 }
 
@@ -36,15 +32,13 @@ model PostView {
 model PostLike {
   id      Int @id @default(autoincrement())
   post_id Int
-  user_id Int
 
   // Relations
   post      Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  Profile   Profile? @relation(fields: [profileId], references: [id])
-  profileId Int?
+  profile   Profile @relation(fields: [profile_id], references: [id])
+  profile_id Int
 
-  @@unique([post_id, user_id])
+  @@unique([post_id, profile_id])
   @@map("post_app_post_likes")
 }
 

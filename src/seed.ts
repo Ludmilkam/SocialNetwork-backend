@@ -160,10 +160,10 @@ async function main() {
           connect: postImages.map((media) => ({ id: media.id })),
         },
         likes: {
-          create: likedBy.map((user) => ({ user_id: user.id })),
+          create: likedBy.map((user) => ({ profile_id: user.id })),
         },
         views: {
-          create: viewedBy.map((user) => ({ user_id: user.id })),
+          create: viewedBy.map((user) => ({ profile_id: user.id })),
         },
       },
     });

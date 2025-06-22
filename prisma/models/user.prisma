@@ -12,10 +12,6 @@ model User {
   date_joined  DateTime  @default(now())
 
   profile     Profile?
-  ChatMessage ChatMessage[]
-  Post        Post[]
-  PostView    PostView[]
-  PostLike    PostLike[]
 
   @@map("auth_user")
 }

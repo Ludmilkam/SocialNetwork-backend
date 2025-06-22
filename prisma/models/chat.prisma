@@ -36,10 +36,8 @@ model ChatMessage {
   attached_image String? // upload_to='images/messages'
 
   // Relations
-  author     User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  author     Profile      @relation(fields: [author_id], references: [id], onDelete: Cascade)
   chat_group ChatGroup @relation(fields: [chat_group_id], references: [id], onDelete: Cascade)
-  Profile    Profile?  @relation(fields: [profileId], references: [id])
-  profileId  Int?
 
   @@map("chat_app_chatmessage")
 }
