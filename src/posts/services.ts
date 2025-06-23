@@ -38,8 +38,8 @@ export class PostsService {
       throw err;
     }
   }
-  async listPosts() {
-    return await this.postsRepo.getAll();
+  async listPosts(currUserId: number) {
+    return await this.postsRepo.getAll(currUserId);
   }
   async listTags() {
     return await this.postsRepo.getAllTags()

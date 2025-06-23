@@ -4,15 +4,19 @@ import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { Prisma } from "../generated/prisma";
 
 export class PostsRepository {
-  async getAll() {
-    return await prisma.post.findMany({
+  async getAll(excludeForAuthorId?: number) {
+    const options: Prisma.PostFindManyArgs = {
       include: {
         tags: { include: { tag: true } },
         author: { include: { avatars: true, user: true } },
         images: true,
         _count: { select: { likes: true, views: true } },
       },
-    });
+    }
+    if (excludeForAuthorId) {
+      options.where = { NOT: { author_id: excludeForAuthorId } }
+    }
+    return await prisma.post.findMany(options);
   }
 
   async deletePostForUserById(authorId: number, postId: number): Promise<void> {
