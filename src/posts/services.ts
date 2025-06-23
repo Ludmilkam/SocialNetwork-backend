@@ -1,4 +1,4 @@
-import { CreatePostInput } from "./types";
+import { CreatePostInput, CreateTagInput } from "./types";
 import { PostsRepository } from "./repositories";
 import { NotFoundError } from "../core/repository";
 
@@ -43,6 +43,19 @@ export class PostsService {
   }
   async listTags() {
     return await this.postsRepo.getAllTags()
+  }
+
+  async createTag(data: CreateTagInput){
+    try {
+      const newTag = await this.postsRepo.createTag({
+        ...data,
+       
+      });
+      return { ...newTag };
+    } catch (err) {
+      throw err;
+    }
+
   }
 }
 

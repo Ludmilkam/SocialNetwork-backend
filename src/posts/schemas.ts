@@ -14,3 +14,7 @@ export const createPostSchema = z.object({
     return val
   }, z.array(z.string().url()).optional().or(z.literal(''))),
 });
+
+export const createTagSchema = z.object({
+    name: z.string()
+})
