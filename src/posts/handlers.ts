@@ -13,7 +13,8 @@ export class PostsHandlers {
     this.service = postsService;
   }
   public listPosts = async (req: Request, res: Response) => {
-    const posts = await this.service.listPosts();
+    const userId = requireAuthorized(res)
+    const posts = await this.service.listPosts(userId);
     res.status(200).json(getSuccededResponse(posts));
   };
 
