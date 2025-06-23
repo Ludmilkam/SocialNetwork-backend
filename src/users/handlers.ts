@@ -29,7 +29,7 @@ import {
   updateUserSchema,
 } from "./schemas";
 import { getSuccededResponse } from "../core/utils";
-import { requireAdmin, requireAuthorized } from "./utils";
+import { requireAuthorized } from "./utils";
 import { Config } from "../core/config";
 import { PostNotFoundError } from "../posts/services";
 
@@ -71,7 +71,7 @@ export class UsersHandlers {
   public getMe = async (req: Request, res: Response) => {
     try {
       const userId = requireAuthorized(res);
-      const user = await this.service.getUser(userId);
+      const user = await this.service.getCurrentUser(userId);
       res.status(200).json(getSuccededResponse(user));
     } catch (err) {
       if (err instanceof InvalidCredentialsError)
@@ -99,30 +99,21 @@ export class UsersHandlers {
     res.status(200).json(getSuccededResponse(users));
   };
 
+  public listRecommendedUsers = async (req: Request, res: Response) => {
+    const userId = requireAuthorized(res)
+    const users = await this.service.listRecommendedUsers(userId);
+    res.status(200).json(getSuccededResponse(users));
+  };
+
   public getUserById = async (req: Request, res: Response) => {
-    requireAdmin(res);
-    const userId = validateObjectId(req.params.userId);
+    requireAuthorized(res)
+    const userId = validateObjectId(req.params.id);
     try {
-      const user = await this.service.getUser(userId);
+      const user = await this.service.getUserById(userId);
       res.status(200).json(getSuccededResponse(user));
     } catch (err) {
       if (err instanceof InvalidCredentialsError) {
         throw new HTTPNotFoundError("User not found");
-      }
-      throw err;
-    }
-  };
-
-  public createUser = async (req: Request, res: Response): Promise<void> => {
-    requireAdmin(res);
-    const body = validateRequest(req, createUserSchema);
-
-    try {
-      const user = await this.service.createUser(body);
-      res.status(200).json(getSuccededResponse(user));
-    } catch (err) {
-      if (err instanceof UserAlreadyExistsError) {
-        throw new HTTPConflictError(err.message);
       }
       throw err;
     }
@@ -142,18 +133,18 @@ export class UsersHandlers {
     }
   };
 
-  public blockUser = async (req: Request, res: Response): Promise<void> => {
-    const { userId, blockedUserId } = req.body;
-    try {
-      await this.service.blockUser(Number(userId), Number(blockedUserId));
-      res.status(204).send();
-    } catch (err) {
-      if (err instanceof UserNotFoundError) {
-        throw new HTTPNotFoundError("User not found");
-      }
-      throw err;
-    }
-  };
+  // public blockUser = async (req: Request, res: Response): Promise<void> => {
+  //   const { userId, blockedUserId } = req.body;
+  //   try {
+  //     await this.service.blockUser(Number(userId), Number(blockedUserId));
+  //     res.status(204).send();
+  //   } catch (err) {
+  //     if (err instanceof UserNotFoundError) {
+  //       throw new HTTPNotFoundError("User not found");
+  //     }
+  //     throw err;
+  //   }
+  // };
 
   public acceptRequest = async (
     req: Request,
@@ -169,9 +160,9 @@ export class UsersHandlers {
     req: Request,
     res: Response
   ): Promise<void> => {
-    const toUserId = requireAuthorized(res)
-    const fromUserId = Number(req.params.fromUserId);
-    await this.service.declineRequest(fromUserId, toUserId);
+    const firstUserId = requireAuthorized(res)
+    const secondUserId = Number(req.params.fromUserId);
+    await this.service.declineRequest(firstUserId, secondUserId);
     res.status(204).send();
   };
 
@@ -195,21 +186,22 @@ export class UsersHandlers {
   public createFriendRequest = async (req: Request, res: Response): Promise<void> => {
     const fromUserId = requireAuthorized(res)
     const { toUserId } = req.body;
-
+    if (!toUserId) {
+      throw new HTTPBadRequestError("toUserId is required")
+    }
     try {
       const result = await this.service.createFriendRequest(
         fromUserId,
         toUserId
       );
-      res.json(getSuccededResponse(result));
+      res.json(getSuccededResponse({ id: result.id }));
     } catch (err) {
       res.status(400).json({ success: false, message: err });
     }
   };
 
   public deletePost = async (req: Request, res: Response): Promise<void> => {
-    requireAdmin(res);
-    const userId = validateObjectId(req.params.userId);
+    const userId = requireAuthorized(res);
     const postId = validateObjectId(req.params.postId);
     try {
       const post = await this.service.deletePost(userId, postId);
@@ -285,13 +277,22 @@ export class UsersHandlers {
   };
 
   public updateAlbum = async (req: Request, res: Response): Promise<void> => {
+    const images = req.files
+      ? (req.files as Express.Multer.File[]).map((item) => ({
+        file: Config.getMediaServeUrl(),
+        filename: item.filename
+      }))
+      : [];
     try {
       const currUserId = requireAuthorized(res);
       const albumId = Number(req.params.albumId);
       const body = validateRequest(req, updateAlbumSchema);
-      const result = await this.service.updateAlbum(albumId, currUserId, body);
+      const result = await this.service.updateAlbum(albumId, currUserId, { ...body, images });
       res.json(getSuccededResponse(result));
     } catch (err) {
+      if (err instanceof NotAllowedError) {
+        throw new HTTPForbiddenError(err.message)
+      }
       throw err;
     }
   };

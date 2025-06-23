@@ -1,5 +1,5 @@
 import { hash } from "bcryptjs";
-import { PrismaClient, MediaType } from "./generated/prisma";
+import { PrismaClient } from "./generated/prisma";
 import { faker } from "@faker-js/faker";
 import { execSync } from "child_process";
 
@@ -37,21 +37,23 @@ async function main() {
   const fakeSigUrl =
     "https://i.postimg.cc/Y9hXr68H/2e45ce67c76ede75ba73053a7a6cb14863dc3380.png";
 
-  console.log("Creating users");
+  console.log("Creating users with profiles");
   const users = await Promise.all(
-    Array.from({ length: 3 }).map(async () =>
+    Array.from({ length: 15 }).map(async () =>
       prisma.user.create({
         data: {
           username: faker.internet.username(),
           email: faker.internet.email(),
-          signatureUrl: Math.random() < 0.5 ? fakeSigUrl : undefined,
-          aboutMe: faker.lorem.sentence(),
-          firstName: faker.person.firstName(),
-          lastName: faker.person.lastName(),
-          birthDate: faker.date.birthdate(),
-          avatarUrl: faker.image.avatar(),
+          profile: {
+            create: {
+              signature: Math.random() < 0.5 ? fakeSigUrl : undefined,
+              date_of_birth: faker.date.birthdate(),
+              avatars: { create: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }).map(_ => ({ image: faker.image.avatar() })) }
+            }
+          },
+          first_name: faker.person.firstName(),
+          last_name: faker.person.lastName(),
           password: await hash("123456789", 10),
-          blockedById: Math.random() < 0.5 ? 1 : null,
         },
       }),
     ),
@@ -74,6 +76,15 @@ const getUniqueFromUserToUserPairIds = (currUserId: number): number => {
   return userId;
 };
 
+  console.log("Creating friends for first x users")
+  await Promise.all(users.slice(0, users.length / 2).map((user) =>
+    prisma.friendship.createMany(
+      {
+        data: Array.from({ length: faker.number.int(5) })
+          .map(() => ({ profile1_id: user.id, profile2_id: getUniqueFromUserToUserPairIds(user.id), accepted: faker.datatype.boolean() }))
+      }
+    )
+  ))
 console.log("Creating friends for first x users");
 
 for (const user of users.slice(0, 5)) {
@@ -88,14 +99,18 @@ for (const user of users.slice(0, 5)) {
   });
 }
 
+  const generateImageObj = () => {
+    const url = faker.image.url()
+    const lastPartIdx = url.lastIndexOf("/")
+    const filename = url.slice(lastPartIdx + 1)
+    const file = url.slice(0, lastPartIdx)
+    return { file, filename }
+  }
   console.log("Creating media");
   const mediaItems = await Promise.all(
     Array.from({ length: 5 }).map(() =>
-      prisma.media.create({
-        data: {
-          url: faker.image.url(),
-          type: faker.helpers.arrayElement([MediaType.IMAGE, MediaType.VIDEO]),
-        },
+      prisma.image.create({
+        data: generateImageObj(),
       }),
     ),
   );
@@ -106,15 +121,15 @@ for (const user of users.slice(0, 5)) {
       await Promise.all(
         Array.from({ length: faker.number.int({ max: 5 }) }).map(() => (prisma.album.create({
           data: {
-            userId: user.id,
+            profile_id: user.id,
             name: faker.lorem.sentence(),
-            subject: faker.lorem.words(3),
-            year: faker.date.birthdate().getFullYear(),
-            photos: {
-              connect: faker.helpers.arrayElements(
+            shown: faker.datatype.boolean(),
+            topic_id: faker.helpers.arrayElement(tags).id,
+            images: {
+              create: faker.helpers.arrayElements(
                 mediaItems,
-                faker.number.int({ min: 0, max: 4 })
-              )
+                faker.number.int({ min: 0, max: 3 })
+              ).map(item => ({ image_id: item.id })),
             },
           }
         })),
@@ -130,7 +145,7 @@ for (const user of users.slice(0, 5)) {
       tags,
       faker.number.int({ min: 1, max: 3 }),
     );
-    const postMedia = faker.helpers.arrayElements(
+    const postImages = faker.helpers.arrayElements(
       mediaItems,
       faker.number.int({ min: 0, max: 2 }),
     );
@@ -146,21 +161,20 @@ for (const user of users.slice(0, 5)) {
     await prisma.post.create({
       data: {
         title: faker.lorem.sentence(),
-        subject: faker.lorem.words(3),
-        body: faker.lorem.paragraphs(2),
-        link: faker.internet.url(),
+        content: faker.lorem.paragraphs(2),
+        links: { create: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }).map(_ => ({ url: faker.internet.url() })) },
         author: { connect: { id: author.id } },
         tags: {
-          connect: postTags.map((tag) => ({ id: tag.id })),
+          create: postTags.map((tag) => ({ tag_id: tag.id })),
         },
-        media: {
-          connect: postMedia.map((media) => ({ id: media.id })),
+        images: {
+          connect: postImages.map((media) => ({ id: media.id })),
         },
-        likedBy: {
-          connect: likedBy.map((user) => ({ id: user.id })),
+        likes: {
+          create: likedBy.map((user) => ({ profile_id: user.id })),
         },
-        viewedBy: {
-          connect: viewedBy.map((user) => ({ id: user.id })),
+        views: {
+          create: viewedBy.map((user) => ({ profile_id: user.id })),
         },
       },
     });

@@ -21,11 +21,11 @@ export const createUserSchema = signUpSchema;
 // export const updateUserSchema = signUpSchema.omit({ password: true });
 
 export const updateMeSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
   email: z.string().optional(),
   username: z.string().optional(),
-  birthDate: z.string().optional(),
+  date_of_birth: z.string().date().transform(val => new Date(val)).optional(),
 })
 
 export const updateUserSchema = z.object({
@@ -37,11 +37,12 @@ export const updateUserSchema = z.object({
 export const createAlbumSchema = z.object({
   name: z.string().min(1, 'Album name is required'),
   subject: z.string().min(1, 'Album subject is required'),
-  year: z.number().int().min(1900).max(new Date().getFullYear())
+  topic_id: z.number()
 })
 
 export const updateAlbumSchema = z.object({
   name: z.string().min(1, 'Album name is required').optional(),
   subject: z.string().min(1, 'Album subject is required').optional(),
-  year: z.number().int().min(1900).max(new Date().getFullYear()).optional()
+  year: z.coerce.number().int().min(1900).max(new Date().getFullYear()).optional(),
+  shown: z.string().toLowerCase().transform((x) => x === 'true').pipe(z.boolean()),
 });

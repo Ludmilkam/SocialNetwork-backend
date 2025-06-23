@@ -1,27 +1,79 @@
 model Post {
-  id       Int     @id @default(autoincrement())
-  link     String?
-  title    String
-  subject  String
-  tags     Tag[]
-  body     String
-  media    Media[]
-  author   User    @relation(fields: [authorId], references: [id])
-  authorId Int
-  viewedBy User[]  @relation("UserPostViews")
-  likedBy  User[]  @relation("UserPostLikes")
+  id        Int    @id @default(autoincrement())
+  title     String
+  content   String
+  author_id Int
+
+  // Relations
+  author    Profile       @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  images    Image[]
+  views     PostView[]
+  likes     PostLike[]
+  tags      PostTag[]
   links     Link[]
+
+  @@map("post_app_post")
+}
+
+model PostView {
+  id      Int @id @default(autoincrement())
+  post_id Int
+
+  // Relations
+  post      Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  profile   Profile @relation(fields: [profile_id], references: [id])
+  profile_id Int
+
+  @@unique([post_id, profile_id])
+  @@map("post_app_post_views")
+}
+
+// Junction table for Post likes (M2M relation)
+model PostLike {
+  id      Int @id @default(autoincrement())
+  post_id Int
+
+  // Relations
+  post      Post     @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  profile   Profile @relation(fields: [profile_id], references: [id])
+  profile_id Int
+
+  @@unique([post_id, profile_id])
+  @@map("post_app_post_likes")
+}
+
+// Junction table for Post tags (M2M relation)
+model PostTag {
+  id      Int @id @default(autoincrement())
+  post_id Int
+  tag_id  Int
+
+  // Relations
+  post Post @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@unique([post_id, tag_id])
+  @@map("post_app_post_tags")
 }
 
 model Tag {
-  id    Int    @id @default(autoincrement())
-  name  String
-  posts Post[]
+  id   Int    @id @default(autoincrement())
+  name String @unique // max_length=50
+
+  // Relations
+  posts  PostTag[]
+  albums Album[]
+
+  @@map("post_app_tag")
 }
 
 model Link {
-  id     Int    @id @default(autoincrement())
-  url    String
-  postId Int
-  post   Post   @relation(fields: [postId], references: [id])
+  id      Int    @id @default(autoincrement())
+  url     String // max_length=200
+  post_id Int
+
+  // Relations
+  post Post @relation(fields: [post_id], references: [id], onDelete: Cascade)
+
+  @@map("post_app_link")
 }

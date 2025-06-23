@@ -1,4 +1,4 @@
-import { createAlbumInput, User } from "./types";
+import { createAlbumInput, updateAlbumInput, updateMeInput, User } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { Album, Prisma } from "../generated/prisma";
@@ -22,24 +22,33 @@ export class UsersRepository {
     }
 
     async getByIdWithRelations(
-        id: number
-    ): Promise<User<{ include: { createdPosts: true } }>> {
+        id: number, shownOnly?: boolean
+    ): Promise<User<{ include: { profile: {} } }>> {
+        const albumsOptions: Prisma.Profile$albumsArgs = { include: { images: { include: { image: true } }, topic: true } }
+        if (shownOnly) {
+            albumsOptions.where = { shown: true }
+        }
         try {
             return await prisma.user.findUniqueOrThrow({
                 where: { id },
                 include: {
-                    createdPosts: {
+                    profile: {
                         include: {
-                            tags: true,
-                            media: true,
-                            _count: {
-                                select: { likedBy: true, viewedBy: true },
+                            posts: {
+                                include: {
+                                    tags: { include: { tag: true } },
+                                    images: true,
+                                    _count: {
+                                        select: { likes: true, views: true },
+                                    },
+                                }
                             },
+                            albums: albumsOptions,
+                            avatars: shownOnly ? { where: { shown: true } } : true,
                         },
                     },
-                    albums: { include: { photos: true } },
                 },
-            });
+            })
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();
@@ -47,26 +56,31 @@ export class UsersRepository {
             throw err;
         }
     }
+    async getFriendsCountForUser(userId: number) {
+        return await prisma.friendship.count({ where: { OR: [{ profile1_id: userId }, { profile2_id: userId }], accepted: true } })
+    }
     async getFriendsForUser(userId: number) {
         // get all friendship relations initiated by `userId` itself or to him from other user
         return await prisma.user.findMany({
             where: {
                 OR: [
                     {
-                        ownFriendships: {
-                            some: { fromUserId: userId, isApproved: true },
-                        },
+                        profile: {
+                            friendship_sent_request: {
+                                some: { profile2_id: userId, accepted: true },
+                            },
+                        }
                     },
                     {
-                        ownFriendships: {
-                            some: { toUserId: userId, isApproved: true },
-                        },
+                        profile: {
+                            friendship_accepted_request: {
+                                some: { profile1_id: userId, accepted: true },
+                            },
+                        }
                     },
                 ],
-                NOT: {
-                    id: userId,
-                },
             },
+            include: { profile: { include: { avatars: true } } }
         });
     }
     async getFriendRequestsForUser(userId: number) {
@@ -78,31 +92,52 @@ export class UsersRepository {
 
         return await prisma.user.findMany({
             where: {
-                OR: [
-                    {
-                        ownFriendships: {
-                            some: { fromUserId: userId, isApproved: false },
+
+                profile: {
+                    OR: [
+                        {
+                            friendship_sent_request: {
+                                some: { profile2_id: userId, accepted: false },
+                            },
                         },
-                    },
-                    {
-                        ownFriendships: {
-                            some: { toUserId: userId, isApproved: false },
-                        },
-                    },
-                ],
+                        {
+                            friendship_accepted_request: {
+                                some: { profile1_id: userId, accepted: false },
+                            },
+                        }
+                    ]
+                }
+                ,
                 NOT: {
                     id: userId,
                 },
             },
+            include: { profile: { include: { avatars: true } } }
         });
+    }
+    async getAllWithoutFriendshipWith(userId: number) {
+        return await prisma.user.findMany({
+            where: { profile: { friendship_sent_request: { none: { profile2_id: userId } }, friendship_accepted_request: { none: { profile1_id: userId } } } },
+            include: { profile: { include: { avatars: true } } }
+        })
     }
 
     async updateById(
         userId: number,
-        data: Prisma.UserUpdateInput
+        data: updateMeInput
     ): Promise<User> {
+        const profileUpdate: Prisma.ProfileUpdateWithoutUserInput = {}
+        if (data.avatarUrl) {
+            // mark all previous avatars as not active anymore
+            await prisma.avatar.updateMany({ data: { active: false }, where: { profile_id: userId } })
+            profileUpdate.avatars = { create: { image: data.avatarUrl } }
+        }
+        if (data.date_of_birth) {
+            profileUpdate.date_of_birth = data.date_of_birth
+        }
+        const updateInput: Prisma.UserUpdateInput = { ...{ ...data, avatarUrl: undefined, date_of_birth: undefined }, profile: { update: profileUpdate } }
         try {
-            return await prisma.user.update({ where: { id: userId }, data });
+            return await prisma.user.update({ where: { id: userId }, data: updateInput });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
                 throw new NotFoundError();
@@ -112,7 +147,9 @@ export class UsersRepository {
     }
 
     async list(): Promise<User[]> {
-        return await prisma.user.findMany();
+        return await prisma.user.findMany({
+            include: { profile: { include: { avatars: true } } }
+        });
     }
 
     async create(data: Prisma.UserCreateInput): Promise<User> {
@@ -142,11 +179,20 @@ export class UsersRepository {
         }
     }
 
-    async block(userId: number, blockedUserId: number): Promise<void> {
+
+    // TODO: handle not found errors
+    async acceptRequest(fromUserId: number, toUserId: number) {
+        console.log(fromUserId, toUserId);
+        return prisma.friendship.update({
+            where: { profile1_id_profile2_id: { profile1_id: fromUserId, profile2_id: toUserId } },
+            data: { accepted: true },
+        });
+    }
+
+    async deleteRequest(fromUserId: number, toUserId: number) {
         try {
-            await prisma.user.update({
-                where: { id: userId },
-                data: { blockedUsers: { connect: { id: blockedUserId } } },
+            return await prisma.friendship.delete({
+                where: { profile1_id_profile2_id: { profile1_id: fromUserId, profile2_id: toUserId } },
             });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
@@ -156,30 +202,22 @@ export class UsersRepository {
         }
     }
 
-    // TODO: handle not found errors
-    async acceptRequest(fromUserId: number, toUserId: number) {
-        console.log(fromUserId, toUserId);
-        return prisma.userFriend.update({
-            where: { fromUserId_toUserId: { fromUserId, toUserId } },
-            data: { isApproved: true },
-        });
-    }
-
-    async declineRequest(fromUserId: number, toUserId: number) {
-        return prisma.userFriend.delete({
-            where: { fromUserId_toUserId: { fromUserId, toUserId } },
-        });
-    }
-
     async deleteFriend(fromUserId: number, toUserId: number) {
-        return prisma.userFriend.delete({
-            where: { fromUserId_toUserId: { fromUserId, toUserId } },
-        });
+        try {
+            return await prisma.friendship.delete({
+                where: { profile1_id_profile2_id: { profile1_id: fromUserId, profile2_id: toUserId } },
+            });
+        } catch (err) {
+            if (getErrorCode(err) === ErrorCodes.NotFound) {
+                throw new NotFoundError();
+            }
+            throw err;
+        }
     }
 
     async createFriendRequest(fromUserId: number, toUserId: number) {
-        return prisma.userFriend.create({
-            data: { fromUserId, toUserId, isApproved: false },
+        return prisma.friendship.create({
+            data: { profile1_id: fromUserId, profile2_id: toUserId },
         });
     }
 
@@ -187,14 +225,14 @@ export class UsersRepository {
         try {
             const post = await prisma.post.findUnique({
                 where: { id: postId },
-                select: { authorId: true },
+                select: { author_id: true },
             });
 
             if (!post) {
                 throw new Error("Post wasn`t found");
             }
 
-            if (post.authorId !== userId) {
+            if (post.author_id !== userId) {
                 throw new Error("It`s not your post");
             }
             await prisma.post.delete({
@@ -212,13 +250,13 @@ export class UsersRepository {
 }
 
 export class OtpEmailRepository {
-    async create(data: Prisma.OtpEmailCreateInput) {
-        await prisma.otpEmail.create({ data });
+    async create(data: Prisma.VerificationCodeCreateInput) {
+        await prisma.verificationCode.create({ data });
     }
     async findByCodeAndEmail(code: string, email: string) {
         try {
-            return await prisma.otpEmail.findUniqueOrThrow({
-                where: { otp: code, email },
+            return await prisma.verificationCode.findFirstOrThrow({
+                where: { code, username: email },
             });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
@@ -229,7 +267,7 @@ export class OtpEmailRepository {
     }
 
     async deleteAllForEmail(email: string) {
-        await prisma.otpEmail.deleteMany({ where: { email } });
+        await prisma.verificationCode.deleteMany({ where: { username: email } });
     }
 }
 
@@ -267,11 +305,11 @@ export class AlbumRepository {
         }
     }
 
-    async updateAlbum(albumId: number, data: Prisma.AlbumUpdateArgs["data"]): Promise<Album> {
+    async updateAlbum(albumId: number, data: updateAlbumInput): Promise<Album> {
         try {
             return await prisma.album.update({
                 where: { id: albumId },
-                data: data
+                data: { ...data, images: { create: data.images.map(el => ({ image: { create: el } })) } }
             });
         } catch (err) {
             if (getErrorCode(err) === ErrorCodes.NotFound) {
@@ -280,4 +318,5 @@ export class AlbumRepository {
             throw err;
         }
     }
+
 }

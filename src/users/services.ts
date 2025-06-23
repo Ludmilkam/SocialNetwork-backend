@@ -20,7 +20,7 @@ import { sendMail } from "../core/mailing";
 import { Config } from "../core/config";
 import ms from "ms";
 import { PostNotFoundError } from "../posts/services";
-import { Album } from "../generated/prisma";
+import { Album, AlbumImage } from "../generated/prisma";
 
 export class InvalidCredentialsError extends Error {
     constructor() {
@@ -68,12 +68,14 @@ export class UsersService {
     private albumRepo: AlbumRepository;
     private otpRepo: OtpEmailRepository;
     private hashSalt: number;
+    private otpTTL: StringValue
 
     constructor() {
         this.usersRepo = new UsersRepository();
         this.albumRepo = new AlbumRepository()
         this.otpRepo = new OtpEmailRepository();
         this.hashSalt = 10;
+        this.otpTTL = Config.OTP_TTL
     }
 
     private async withHashedPassword<T>(
@@ -111,7 +113,7 @@ export class UsersService {
     async createUser(data: createUserInput): Promise<ShowUser> {
         const userData = await this.withHashedPassword(data);
         try {
-            const newUser = await this.usersRepo.create(userData);
+            const newUser = await this.usersRepo.create({ ...userData, username: "" });
             return { ...newUser, password: undefined };
         } catch (err) {
             if (err instanceof AlreadyExistsError) {
@@ -120,7 +122,6 @@ export class UsersService {
             throw err;
         }
     }
-
     async signUp(
         data: signUpInput
     ): Promise<{ user: ShowUser; token: string }> {
@@ -135,7 +136,8 @@ export class UsersService {
             }
             throw err;
         }
-        if (otpWithEmail.expiresAt < new Date()) {
+        const expiresAt = otpWithEmail.created_at.getTime() + ms(this.otpTTL)
+        if (new Date().getTime() >= expiresAt) {
             throw new OtpExpiredError();
         }
         await this.otpRepo.deleteAllForEmail(data.email);
@@ -150,13 +152,26 @@ export class UsersService {
         return { user, token: token };
     }
 
-    async getUser(userId: number): Promise<ShowUserWithRelations> {
+    async getCurrentUser(userId: number) {
         try {
             const user = await this.usersRepo.getByIdWithRelations(userId);
             return { ...user, password: undefined };
         } catch (err) {
             if (err instanceof NotFoundError) {
                 throw new InvalidCredentialsError();
+            }
+            throw err;
+        }
+    }
+
+    async getUserById(userId: number) {
+        try {
+            const user = await this.usersRepo.getByIdWithRelations(userId, true);
+            const friendsCount = await this.usersRepo.getFriendsCountForUser(userId)
+            return { ...user, friendsCount, password: undefined };
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                throw new UserNotFoundError(`id=${userId}`);
             }
             throw err;
         }
@@ -174,23 +189,30 @@ export class UsersService {
         }
     }
 
-    async blockUser(userId: number, blockedUserId: number) {
-        try {
-            return this.usersRepo.block(userId, blockedUserId);
-        } catch (err) {
-            if (err instanceof NotFoundError) {
-                throw new PostNotFoundError();
-            }
-            throw err;
-        }
-    }
+    // async blockUser(userId: number, blockedUserId: number) {
+    //     try {
+    //         return this.usersRepo.block(userId, blockedUserId);
+    //     } catch (err) {
+    //         if (err instanceof NotFoundError) {
+    //             throw new PostNotFoundError();
+    //         }
+    //         throw err;
+    //     }
+    // }
 
     async acceptRequest(fromUserId: number, toUserId: number) {
         return this.usersRepo.acceptRequest(fromUserId, toUserId);
     }
 
-    async declineRequest(fromUserId: number, toUserId: number) {
-        return this.usersRepo.declineRequest(fromUserId, toUserId);
+    async declineRequest(firstUserId: number, secondUserId: number) {
+        try {
+            return await this.usersRepo.deleteRequest(firstUserId, secondUserId);
+        } catch (err) {
+            if (err instanceof NotFoundError) {
+                return await this.usersRepo.deleteRequest(firstUserId, secondUserId);
+            }
+            throw err;
+        }
     }
 
     async deleteFriend(friendId: number, currentUserId: number) {
@@ -210,8 +232,11 @@ export class UsersService {
     }
 
     async listUsers(): Promise<User[]> {
-        const users = await this.usersRepo.list();
-        return users.map((user) => ({ ...user }));
+        return await this.usersRepo.list();
+    }
+
+    async listRecommendedUsers(currUserId: number) {
+        return await this.usersRepo.getAllWithoutFriendshipWith(currUserId)
     }
 
     async deletePost(userId: number, postId: number): Promise<void> {
@@ -231,9 +256,7 @@ export class UsersService {
     }
 
     async friendRequests(userId: number): Promise<User[]> {
-        const friendRequests =
-            await this.usersRepo.getFriendRequestsForUser(userId);
-        return friendRequests.map((request) => ({ ...request }));
+        return await this.usersRepo.getFriendRequestsForUser(userId);
     }
 
     async sendOTP(email: string) {
@@ -248,25 +271,20 @@ export class UsersService {
         if (user) {
             throw new OtpGenerationForbidden();
         }
-        const otp = generate(Config.OTP_LENGTH);
-        const expiresAt = new Date();
-        const ONE_MIN_MS = 60000;
-        expiresAt.setMinutes(
-            expiresAt.getMinutes() + ms(Config.OTP_TTL) / ONE_MIN_MS
-        );
-        await this.otpRepo.create({ otp, email, expiresAt });
+        const code = generate(Config.OTP_LENGTH);
+        await this.otpRepo.create({ code, username: email });
         await sendMail(
             email,
             "Email confirmation",
             `Hi dear user.
             Here is your otp which you can use to confirm your email and continue
-            in registration.\n${otp}`
+            in registration.\n${code}`
         );
     }
     async deleteAlbum(albumId: number, currentUserId: number): Promise<void> {
         const album = await this.albumRepo.findUnique({ id: albumId });
 
-        if (album.userId !== currentUserId) {
+        if (album.profile_id !== currentUserId) {
             throw new NotAllowedError('Album does not belong to current user');
         }
 
@@ -276,15 +294,15 @@ export class UsersService {
         // First verify the album exists and belongs to the current user
         const album = await this.albumRepo.findUnique({ id: albumId });
 
-        if (album.userId !== currentUserId) {
+        if (album.profile_id !== currentUserId) {
             throw new NotAllowedError('Album does not belong to current user');
         }
 
-        return this.albumRepo.updateAlbum(albumId, data);
+        return await this.albumRepo.updateAlbum(albumId, data);
     }
 
-    async createAlbum(userId: number, data: createAlbumInput): Promise<Album> {
-        return this.albumRepo.createAlbum({ ...data, userId });
+    async createAlbum(currentUserId: number, data: createAlbumInput): Promise<Album> {
+        return this.albumRepo.createAlbum({ ...data, profile_id: currentUserId });
     }
 }
 

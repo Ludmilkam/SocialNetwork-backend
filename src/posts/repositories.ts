@@ -7,10 +7,10 @@ export class PostsRepository {
   async getAll() {
     return await prisma.post.findMany({
       include: {
-        tags: true,
-        author: true,
-        media: true,
-        _count: { select: { likedBy: true, viewedBy: true } },
+        tags: { include: { tag: true } },
+        author: { include: { avatars: true, user: true } },
+        images: true,
+        _count: { select: { likes: true, views: true } },
       },
     });
   }
@@ -18,7 +18,7 @@ export class PostsRepository {
   async deletePostForUserById(authorId: number, postId: number): Promise<void> {
     try {
       await prisma.post.delete({
-        where: { id: postId, authorId },
+        where: { id: postId, author_id: authorId },
       });
     } catch (err) {
       if (getErrorCode(err) === ErrorCodes.NotFound) {

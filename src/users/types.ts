@@ -1,4 +1,4 @@
-import { Prisma } from "../generated/prisma";
+import { AlbumImage, Prisma } from "../generated/prisma";
 import { z } from "zod";
 import {
   createUserSchema,
@@ -20,7 +20,7 @@ export type ShowUser<
   S extends boolean | null | undefined | Prisma.UserDefaultArgs = {},
 > = Omit<User<S>, "password"> & { password: undefined };
 export type ShowUserWithRelations = ShowUser<{
-  include: { createdPosts: true };
+  include: { profile: { include: { posts: true } } };
 }>;
 
 
@@ -30,4 +30,4 @@ export type createUserInput = z.infer<typeof createUserSchema>;
 export type updateUserInput = z.infer<typeof updateUserSchema>;
 export type updateMeInput = z.infer<typeof updateMeSchema> & { avatarUrl?: string }
 export type createAlbumInput = z.infer<typeof createAlbumSchema>
-export type updateAlbumInput = z.infer<typeof updateAlbumSchema>
+export type updateAlbumInput = z.infer<typeof updateAlbumSchema> & { images: { file: string, filename: string }[] }
