@@ -168,7 +168,66 @@ async function main() {
       },
     });
   }
+  console.log("Creating chats")
+  // Create chat groups
+  const chatGroups = [];
+  for (let i = 0; i < 20; i++) {
+    const chatGroup = await prisma.chatGroup.create({
+      data: {
+        name: faker.lorem.words(2),
+        is_personal_chat: faker.datatype.boolean(),
+        admin_id: faker.helpers.arrayElement(users).id,
+        avatar: faker.helpers.maybe(() => faker.image.url())
+      }
+    });
+    chatGroups.push(chatGroup);
+  }
+
+  // Add members to groups
+  for (const group of chatGroups) {
+    // Add random members
+    const memberCount = faker.number.int({ min: 1, max: 8 });
+    const randomMembers = faker.helpers.arrayElements(
+      users.filter(p => p.id !== group.admin_id),
+      memberCount
+    );
+
+    for (const member of randomMembers) {
+      try {
+        await prisma.chatGroupMember.create({
+          data: {
+            chatgroup_id: group.id,
+            profile_id: member.id
+          }
+        });
+      } catch (error) {
+        // Skip duplicates
+      }
+    }
+  }
+
+  // Create messages
+  for (const group of chatGroups) {
+    const members = await prisma.chatGroupMember.findMany({
+      where: { chatgroup_id: group.id }
+    });
+
+    const messageCount = faker.number.int({ min: 10, max: 100 });
+    for (let i = 0; i < messageCount; i++) {
+      await prisma.chatMessage.create({
+        data: {
+          content: faker.lorem.sentences(),
+          author_id: faker.helpers.arrayElement(members).profile_id,
+          chat_group_id: group.id,
+          sent_at: faker.date.recent({ days: 30 }),
+          attached_image: faker.helpers.maybe(() => faker.image.url())
+        }
+      });
+    }
+  }
+
 }
+
 
 main()
   .then(() => {
