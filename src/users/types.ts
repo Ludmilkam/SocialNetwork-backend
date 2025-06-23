@@ -7,7 +7,7 @@ import {
   updateMeSchema,
   updateUserSchema,
   createAlbumSchema,
-  updateAlbumSchema
+  updateAlbumSchema,
 } from "./schemas";
 
 export type AuthTokenPayload = { uid: number };
@@ -23,11 +23,14 @@ export type ShowUserWithRelations = ShowUser<{
   include: { profile: { include: { posts: true } } };
 }>;
 
-
 export type signInInput = z.infer<typeof signInSchema>;
 export type signUpInput = z.infer<typeof signUpSchema>;
 export type createUserInput = z.infer<typeof createUserSchema>;
 export type updateUserInput = z.infer<typeof updateUserSchema>;
-export type updateMeInput = z.infer<typeof updateMeSchema> & { avatarUrl?: string }
-export type createAlbumInput = z.infer<typeof createAlbumSchema>
-export type updateAlbumInput = z.infer<typeof updateAlbumSchema> & { images: { file: string, filename: string }[] }
+export type updateMeInput = z.infer<typeof updateMeSchema> & {
+  avatarUrl?: string;
+};
+export type createAlbumInput = z.infer<typeof createAlbumSchema>;
+export type updateAlbumInput = z.infer<typeof updateAlbumSchema> & {
+  images: { file: string; filename: string }[];
+};

@@ -12,9 +12,9 @@ export class PostsRepository {
         images: true,
         _count: { select: { likes: true, views: true } },
       },
-    }
+    };
     if (excludeForAuthorId) {
-      options.where = { NOT: { author_id: excludeForAuthorId } }
+      options.where = { NOT: { author_id: excludeForAuthorId } };
     }
     return await prisma.post.findMany(options);
   }
@@ -44,6 +44,6 @@ export class PostsRepository {
     }
   }
   async getAllTags() {
-    return await prisma.tag.findMany({})
+    return await prisma.tag.findMany({});
   }
 }

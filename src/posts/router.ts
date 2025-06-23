@@ -8,6 +8,6 @@ const handlers = new PostsHandlers();
 router.get("/", handlers.listPosts);
 router.post("/", upload.array("media", 6), handlers.createPost);
 router.delete("/:id", handlers.deletePost);
-router.get("/tags", handlers.listTags)
+router.get("/tags", handlers.listTags);
 
 export default router;

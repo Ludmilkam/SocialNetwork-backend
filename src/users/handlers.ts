@@ -81,11 +81,16 @@ export class UsersHandlers {
   };
 
   public updateMe = async (req: Request, res: Response) => {
-    const avatarUrl = req.file ? Config.getMediaServeUrl() + "/" + req.file.filename : undefined
+    const avatarUrl = req.file
+      ? Config.getMediaServeUrl() + "/" + req.file.filename
+      : undefined;
     try {
       const userId = requireAuthorized(res);
       const body = validateRequest(req, updateMeSchema);
-      const user = await this.service.updateUser(userId, { ...body, avatarUrl });
+      const user = await this.service.updateUser(userId, {
+        ...body,
+        avatarUrl,
+      });
       res.status(200).json(getSuccededResponse(user));
     } catch (err) {
       if (err instanceof InvalidCredentialsError)
@@ -100,13 +105,13 @@ export class UsersHandlers {
   };
 
   public listRecommendedUsers = async (req: Request, res: Response) => {
-    const userId = requireAuthorized(res)
+    const userId = requireAuthorized(res);
     const users = await this.service.listRecommendedUsers(userId);
     res.status(200).json(getSuccededResponse(users));
   };
 
   public getUserById = async (req: Request, res: Response) => {
-    requireAuthorized(res)
+    requireAuthorized(res);
     const userId = validateObjectId(req.params.id);
     try {
       const user = await this.service.getUserById(userId);
@@ -146,11 +151,8 @@ export class UsersHandlers {
   //   }
   // };
 
-  public acceptRequest = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    const toUserId = requireAuthorized(res)
+  public acceptRequest = async (req: Request, res: Response): Promise<void> => {
+    const toUserId = requireAuthorized(res);
     const { fromUserId } = req.body;
     const result = await this.service.acceptRequest(fromUserId, toUserId);
     res.status(200).json(getSuccededResponse(result));
@@ -158,41 +160,38 @@ export class UsersHandlers {
 
   public declineRequest = async (
     req: Request,
-    res: Response
+    res: Response,
   ): Promise<void> => {
-    const firstUserId = requireAuthorized(res)
+    const firstUserId = requireAuthorized(res);
     const secondUserId = Number(req.params.fromUserId);
     await this.service.declineRequest(firstUserId, secondUserId);
     res.status(204).send();
   };
 
-  public deleteFriend = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    const currUserId = requireAuthorized(res)
+  public deleteFriend = async (req: Request, res: Response): Promise<void> => {
+    const currUserId = requireAuthorized(res);
     const friendId = Number(req.params.friendId);
     try {
-      await this.service.deleteFriend(
-        friendId,
-        currUserId
-      );
+      await this.service.deleteFriend(friendId, currUserId);
       res.status(204).send();
     } catch (err) {
-      throw new HTTPBadRequestError("bad request")
+      throw new HTTPBadRequestError("bad request");
     }
   };
 
-  public createFriendRequest = async (req: Request, res: Response): Promise<void> => {
-    const fromUserId = requireAuthorized(res)
+  public createFriendRequest = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    const fromUserId = requireAuthorized(res);
     const { toUserId } = req.body;
     if (!toUserId) {
-      throw new HTTPBadRequestError("toUserId is required")
+      throw new HTTPBadRequestError("toUserId is required");
     }
     try {
       const result = await this.service.createFriendRequest(
         fromUserId,
-        toUserId
+        toUserId,
       );
       res.json(getSuccededResponse({ id: result.id }));
     } catch (err) {
@@ -239,17 +238,14 @@ export class UsersHandlers {
     } catch (err) {
       if (err instanceof OtpGenerationForbidden) {
         throw new HTTPForbiddenError(
-          "You can't create otp if you already registered"
+          "You can't create otp if you already registered",
         );
       }
       throw err;
     }
     res.status(204).send();
   };
-  public deleteAlbum = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
+  public deleteAlbum = async (req: Request, res: Response): Promise<void> => {
     const currUserId = requireAuthorized(res);
     const albumId = Number(req.params.albumId);
     try {
@@ -257,9 +253,9 @@ export class UsersHandlers {
       res.status(204).send();
     } catch (err) {
       if (err instanceof NotAllowedError) {
-        throw new HTTPForbiddenError(err.message)
+        throw new HTTPForbiddenError(err.message);
       }
-      throw err
+      throw err;
     }
   };
 
@@ -268,7 +264,7 @@ export class UsersHandlers {
       const userId = requireAuthorized(res);
       const body = validateRequest(req, createAlbumSchema);
       const result = await this.service.createAlbum(userId, {
-        ...body
+        ...body,
       });
       res.status(201).json(getSuccededResponse(result));
     } catch (err) {
@@ -279,19 +275,22 @@ export class UsersHandlers {
   public updateAlbum = async (req: Request, res: Response): Promise<void> => {
     const images = req.files
       ? (req.files as Express.Multer.File[]).map((item) => ({
-        file: Config.getMediaServeUrl(),
-        filename: item.filename
-      }))
+          file: Config.getMediaServeUrl(),
+          filename: item.filename,
+        }))
       : [];
     try {
       const currUserId = requireAuthorized(res);
       const albumId = Number(req.params.albumId);
       const body = validateRequest(req, updateAlbumSchema);
-      const result = await this.service.updateAlbum(albumId, currUserId, { ...body, images });
+      const result = await this.service.updateAlbum(albumId, currUserId, {
+        ...body,
+        images,
+      });
       res.json(getSuccededResponse(result));
     } catch (err) {
       if (err instanceof NotAllowedError) {
-        throw new HTTPForbiddenError(err.message)
+        throw new HTTPForbiddenError(err.message);
       }
       throw err;
     }

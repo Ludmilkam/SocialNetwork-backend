@@ -7,4 +7,3 @@ export const requireAuthorized = (res: Response): number => {
   }
   return res.locals.userId;
 };
-

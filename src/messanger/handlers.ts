@@ -8,9 +8,14 @@ export class MessangerHandlers {
   constructor() {
     this.service = messangerService;
   }
-  public listUserChats = async (req: Request, res: Response) => {
-    const userId = requireAuthorized(res)
-    const chats = await this.service.listUserChats(userId);
+  public listGroupChats = async (req: Request, res: Response) => {
+    const userId = requireAuthorized(res);
+    const chats = await this.service.listGroupChats(userId);
+    res.status(200).json(getSuccededResponse(chats));
+  };
+  public listPersonalChats = async (req: Request, res: Response) => {
+    const userId = requireAuthorized(res);
+    const chats = await this.service.listPersonalChats(userId);
     res.status(200).json(getSuccededResponse(chats));
   };
 }

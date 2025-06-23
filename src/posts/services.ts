@@ -21,7 +21,9 @@ export class PostsService {
         ...data,
         author: { connect: { id: userId } },
         images: { create: data.images },
-        links: data.links ? { create: data.links.map(url => ({ url })) } : undefined
+        links: data.links
+          ? { create: data.links.map((url) => ({ url })) }
+          : undefined,
       });
       return { ...newPost };
     } catch (err) {
@@ -42,7 +44,7 @@ export class PostsService {
     return await this.postsRepo.getAll(currUserId);
   }
   async listTags() {
-    return await this.postsRepo.getAllTags()
+    return await this.postsRepo.getAllTags();
   }
 }
 
