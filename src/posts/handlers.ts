@@ -53,7 +53,8 @@ export class PostsHandlers {
   };
 
   public createTag = async (req: Request, res: Response) => {
-    const tag = validateRequest(req, createTagSchema)
+    const body = validateRequest(req, createTagSchema)
+    const tag = await this.service.createTag(body)
     res.status(200).json(getSuccededResponse(tag))
   }
 }
