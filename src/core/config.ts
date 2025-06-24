@@ -13,6 +13,9 @@ export const Config = {
   JWT_TTL: (process.env.JWT_TTL || "1h") as StringValue,
   JWT_SECRET: process.env.JWT_SECRET!,
   getMediaServeUrl: () => {
-    return process.env.MEDIA_SERVE_URL || `http://${Config.SERVER_HOST}:${Config.SERVER_PORT}`
-  }
+    return (
+      process.env.MEDIA_SERVE_URL ||
+      `http://${Config.SERVER_HOST}:${Config.SERVER_PORT}`
+    );
+  },
 };

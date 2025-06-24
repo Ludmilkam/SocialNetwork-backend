@@ -13,7 +13,7 @@ export class PostsHandlers {
     this.service = postsService;
   }
   public listPosts = async (req: Request, res: Response) => {
-    const userId = requireAuthorized(res)
+    const userId = requireAuthorized(res);
     const posts = await this.service.listPosts(userId);
     res.status(200).json(getSuccededResponse(posts));
   };
@@ -23,9 +23,9 @@ export class PostsHandlers {
     const body = validateRequest(req, createPostSchema);
     const images = req.files
       ? (req.files as Express.Multer.File[]).map((item) => ({
-        file: Config.getMediaServeUrl(),
-        filename: item.filename
-      }))
+          file: Config.getMediaServeUrl(),
+          filename: item.filename,
+        }))
       : [];
     const post = await this.service.createPost(userId, {
       ...body,

@@ -12,7 +12,7 @@ app.use(
   cors({
     origin: "exp://192.168.0.115:8081",
     methods: ["GET", "POST", "DELETE"],
-  })
+  }),
 );
 app.use(express.static("uploads"));
 app.use(express.json());

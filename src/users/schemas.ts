@@ -25,24 +25,37 @@ export const updateMeSchema = z.object({
   last_name: z.string().optional(),
   email: z.string().optional(),
   username: z.string().optional(),
-  date_of_birth: z.string().date().transform(val => new Date(val)).optional(),
-})
+  date_of_birth: z
+    .string()
+    .date()
+    .transform((val) => new Date(val))
+    .optional(),
+});
 
 export const updateUserSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
-  username: z.string()
-})
+  username: z.string(),
+});
 
 export const createAlbumSchema = z.object({
-  name: z.string().min(1, 'Album name is required'),
-  subject: z.string().min(1, 'Album subject is required'),
-  topic_id: z.number()
-})
+  name: z.string().min(1, "Album name is required"),
+  subject: z.string().min(1, "Album subject is required"),
+  topic_id: z.number(),
+});
 
 export const updateAlbumSchema = z.object({
-  name: z.string().min(1, 'Album name is required').optional(),
-  subject: z.string().min(1, 'Album subject is required').optional(),
-  year: z.coerce.number().int().min(1900).max(new Date().getFullYear()).optional(),
-  shown: z.string().toLowerCase().transform((x) => x === 'true').pipe(z.boolean()),
+  name: z.string().min(1, "Album name is required").optional(),
+  subject: z.string().min(1, "Album subject is required").optional(),
+  year: z.coerce
+    .number()
+    .int()
+    .min(1900)
+    .max(new Date().getFullYear())
+    .optional(),
+  shown: z
+    .string()
+    .toLowerCase()
+    .transform((x) => x === "true")
+    .pipe(z.boolean()),
 });

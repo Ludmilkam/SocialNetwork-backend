@@ -48,8 +48,12 @@ async function main() {
             create: {
               signature: Math.random() < 0.5 ? fakeSigUrl : undefined,
               date_of_birth: faker.date.birthdate(),
-              avatars: { create: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }).map(_ => ({ image: faker.image.avatar() })) }
-            }
+              avatars: {
+                create: Array.from({
+                  length: faker.number.int({ min: 0, max: 3 }),
+                }).map((_) => ({ image: faker.image.avatar() })),
+              },
+            },
           },
           first_name: faker.person.firstName(),
           last_name: faker.person.lastName(),
@@ -60,10 +64,10 @@ async function main() {
   );
   let _usedUserIds: number[][] = [];
   const getUniqueFromUserToUserPairIds = (currUserId: number): number => {
-    console.log("Count records", _usedUserIds.length)
+    console.log("Count records", _usedUserIds.length);
     let userId = faker.helpers.arrayElement(users).id;
     const pairIds = [currUserId, userId];
-    console.log(pairIds)
+    console.log(pairIds);
     while (
       currUserId === userId ||
       _usedUserIds.some(
@@ -78,23 +82,26 @@ async function main() {
     return userId;
   };
 
-  console.log("Creating friends for first x users")
-  await Promise.all(users.slice(0, users.length / 2).map((user) =>
-    prisma.friendship.createMany(
-      {
-        data: Array.from({ length: faker.number.int(5) })
-          .map(() => ({ profile1_id: user.id, profile2_id: getUniqueFromUserToUserPairIds(user.id), accepted: faker.datatype.boolean() }))
-      }
-    )
-  ))
+  console.log("Creating friends for first x users");
+  await Promise.all(
+    users.slice(0, users.length / 2).map((user) =>
+      prisma.friendship.createMany({
+        data: Array.from({ length: faker.number.int(5) }).map(() => ({
+          profile1_id: user.id,
+          profile2_id: getUniqueFromUserToUserPairIds(user.id),
+          accepted: faker.datatype.boolean(),
+        })),
+      }),
+    ),
+  );
 
   const generateImageObj = () => {
-    const url = faker.image.url()
-    const lastPartIdx = url.lastIndexOf("/")
-    const filename = url.slice(lastPartIdx + 1)
-    const file = url.slice(0, lastPartIdx)
-    return { file, filename }
-  }
+    const url = faker.image.url();
+    const lastPartIdx = url.lastIndexOf("/");
+    const filename = url.slice(lastPartIdx + 1);
+    const file = url.slice(0, lastPartIdx);
+    return { file, filename };
+  };
   console.log("Creating media");
   const mediaItems = await Promise.all(
     Array.from({ length: 5 }).map(() =>
@@ -106,28 +113,32 @@ async function main() {
 
   console.log("Creating user's albums");
   await Promise.all(
-    users.map(async (user) =>
-      await Promise.all(
-        Array.from({ length: faker.number.int({ max: 5 }) }).map(() => (prisma.album.create({
-          data: {
-            profile_id: user.id,
-            name: faker.lorem.sentence(),
-            shown: faker.datatype.boolean(),
-            topic_id: faker.helpers.arrayElement(tags).id,
-            images: {
-              create: faker.helpers.arrayElements(
-                mediaItems,
-                faker.number.int({ min: 0, max: 3 })
-              ).map(item => ({ image_id: item.id })),
-            },
-          }
-        })),
+    users.map(
+      async (user) =>
+        await Promise.all(
+          Array.from({ length: faker.number.int({ max: 5 }) }).map(() =>
+            prisma.album.create({
+              data: {
+                profile_id: user.id,
+                name: faker.lorem.sentence(),
+                shown: faker.datatype.boolean(),
+                topic_id: faker.helpers.arrayElement(tags).id,
+                images: {
+                  create: faker.helpers
+                    .arrayElements(
+                      mediaItems,
+                      faker.number.int({ min: 0, max: 3 }),
+                    )
+                    .map((item) => ({ image_id: item.id })),
+                },
+              },
+            }),
+          ),
         ),
-      )
-    )
-  )
+    ),
+  );
 
-  console.log("Creating posts")
+  console.log("Creating posts");
   for (let i = 0; i < 20; i++) {
     const author = faker.helpers.arrayElement(users);
     const postTags = faker.helpers.arrayElements(
@@ -151,7 +162,11 @@ async function main() {
       data: {
         title: faker.lorem.sentence(),
         content: faker.lorem.paragraphs(2),
-        links: { create: Array.from({ length: faker.number.int({ min: 0, max: 3 }) }).map(_ => ({ url: faker.internet.url() })) },
+        links: {
+          create: Array.from({
+            length: faker.number.int({ min: 0, max: 3 }),
+          }).map((_) => ({ url: faker.internet.url() })),
+        },
         author: { connect: { id: author.id } },
         tags: {
           create: postTags.map((tag) => ({ tag_id: tag.id })),
@@ -167,6 +182,63 @@ async function main() {
         },
       },
     });
+  }
+  console.log("Creating chats");
+  // Create chat groups
+  const chatGroups = [];
+  for (let i = 0; i < 20; i++) {
+    const chatGroup = await prisma.chatGroup.create({
+      data: {
+        name: faker.lorem.words(2),
+        is_personal_chat: faker.datatype.boolean(),
+        admin_id: faker.helpers.arrayElement(users).id,
+        avatar: faker.helpers.maybe(() => faker.image.url()),
+      },
+    });
+    chatGroups.push(chatGroup);
+  }
+
+  // Add members to groups
+  for (const group of chatGroups) {
+    // Add random members
+    const memberCount = faker.number.int({ min: 1, max: 8 });
+    const randomMembers = faker.helpers.arrayElements(
+      users.filter((p) => p.id !== group.admin_id),
+      memberCount,
+    );
+
+    for (const member of randomMembers) {
+      try {
+        await prisma.chatGroupMember.create({
+          data: {
+            chatgroup_id: group.id,
+            profile_id: member.id,
+          },
+        });
+      } catch (error) {
+        // Skip duplicates
+      }
+    }
+  }
+
+  // Create messages
+  for (const group of chatGroups) {
+    const members = await prisma.chatGroupMember.findMany({
+      where: { chatgroup_id: group.id },
+    });
+
+    const messageCount = faker.number.int({ min: 10, max: 100 });
+    for (let i = 0; i < messageCount; i++) {
+      await prisma.chatMessage.create({
+        data: {
+          content: faker.lorem.sentences(),
+          author_id: faker.helpers.arrayElement(members).profile_id,
+          chat_group_id: group.id,
+          sent_at: faker.date.recent({ days: 30 }),
+          attached_image: faker.helpers.maybe(() => faker.image.url()),
+        },
+      });
+    }
   }
 }
 
