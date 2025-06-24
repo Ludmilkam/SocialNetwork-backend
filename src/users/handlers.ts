@@ -275,9 +275,9 @@ export class UsersHandlers {
   public updateAlbum = async (req: Request, res: Response): Promise<void> => {
     const images = req.files
       ? (req.files as Express.Multer.File[]).map((item) => ({
-          file: Config.getMediaServeUrl(),
-          filename: item.filename,
-        }))
+        file: Config.getMediaServeUrl(),
+        filename: item.filename,
+      }))
       : [];
     try {
       const currUserId = requireAuthorized(res);
@@ -295,4 +295,16 @@ export class UsersHandlers {
       throw err;
     }
   };
+
+  public checkIsAuthenticated = async (req: Request, res: Response): Promise<void> => {
+    try {
+      requireAuthorized(res)
+      res.json(getSuccededResponse({ isAuthenticated: true }))
+    } catch (err) {
+      if (err instanceof HTTPUnauthorizedError) {
+        res.json(getSuccededResponse({ isAuthenticated: false }))
+      }
+      throw err
+    }
+  }
 }

@@ -6,6 +6,7 @@ const router = Router();
 
 const handlers = new UsersHandlers();
 
+router.get("/check-auth", handlers.checkIsAuthenticated)
 router.post("/signup", handlers.signUp);
 router.post("/signin", handlers.signIn);
 router.post("/update", handlers.updateUser);
