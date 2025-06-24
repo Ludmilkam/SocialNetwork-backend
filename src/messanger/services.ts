@@ -41,6 +41,21 @@ export class MessagerService {
       }
     });
   }
+  async getChat(chatId: number, currUserId: number, messageLimit?: number, messageOffset?: number) {
+    const chat = await this.chatsRepo.getByIdWithMessagesAndMembers({
+      chatId,
+      profileId: currUserId,
+      messageLimit,
+      messageOffset,
+    });
+
+    if (!chat) {
+      return null; // Chat not found or user is not a member
+    }
+    chat.members = chat.members.map(member => ({ ...member.profile.user, profile: { ...member.profile, user: undefined } })) as any
+    return chat
+  }
+
 }
 
 export const messangerService = new MessagerService();

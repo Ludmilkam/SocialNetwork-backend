@@ -16,6 +16,7 @@ export class PostsService {
   }
 
   async createPost(userId: number, data: CreatePostInput) {
+    delete data.subject
     try {
       const newPost = await this.postsRepo.create({
         ...data,

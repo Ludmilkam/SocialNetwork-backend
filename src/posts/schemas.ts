@@ -16,7 +16,7 @@ export const createPostSchema = z.object({
     .string()
     .max(50, "The title must contain a maximum of 50 characters")
     .min(1, "The title must contain at least 1 characters"),
-  subject: z.string(),
+  subject: z.string().optional(),
   content: z.string(),
   links: linksField
 });
@@ -28,5 +28,5 @@ export const updatePostSchema = z.object({
 });
 
 export const createTagSchema = z.object({
-    name: z.string()
+  name: z.string()
 })

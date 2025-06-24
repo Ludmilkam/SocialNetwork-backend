@@ -34,4 +34,53 @@ export class ChatsRepository {
       options,
     )) as ChatGroupWithLastMessageAndOptionalMembers[];
   }
+  async getByIdWithMessagesAndMembers({
+    chatId,
+    profileId,
+    messageLimit = 50,
+    messageOffset = 0,
+  }: {
+    chatId: number;
+    profileId: number;
+    messageLimit?: number;
+    messageOffset?: number;
+  }) {
+    // First check if user is a member of this chat
+    const membership = await prisma.chatGroupMember.findFirst({
+      where: {
+        chatgroup_id: chatId,
+        profile_id: profileId,
+      },
+    });
+
+    if (!membership) {
+      return null; // User is not a member of this chat
+    }
+
+    return await prisma.chatGroup.findUnique({
+      where: { id: chatId },
+      include: {
+        messages: {
+          orderBy: { sent_at: 'desc' },
+          take: messageLimit,
+          skip: messageOffset,
+        },
+        members: {
+          include: {
+            profile: {
+              include: {
+                user: true,
+                avatars: true,
+              },
+            },
+          },
+        },
+        admin: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+  }
 }
