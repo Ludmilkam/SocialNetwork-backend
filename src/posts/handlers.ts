@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { validateObjectId, validateRequest } from "../core/validation";
 import { getSuccededResponse } from "../core/utils";
 import { requireAuthorized } from "../users/utils";
-import { createPostSchema, updatePostSchema } from "./schemas";
+import { createPostSchema, updatePostSchema, createTagSchema } from "./schemas";
 import { PostNotFoundError, PostsService, postsService } from "./services";
 import { Config } from "../core/config";
 import { HTTPNotFoundError } from "../core/http-errors";
@@ -74,7 +74,13 @@ export class PostsHandlers {
     }
   };
   public listTags = async (req: Request, res: Response) => {
-    const posts = await this.service.listTags();
-    res.status(200).json(getSuccededResponse(posts));
+    const tags = await this.service.listTags();
+    res.status(200).json(getSuccededResponse(tags))
   };
+
+  public createTag = async (req: Request, res: Response) => {
+    const body = validateRequest(req, createTagSchema)
+    const tag = await this.service.createTag(body)
+    res.status(200).json(getSuccededResponse(tag))
+  }
 }

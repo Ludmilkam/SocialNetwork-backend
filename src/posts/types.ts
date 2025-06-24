@@ -1,6 +1,6 @@
 import { Prisma } from "../generated/prisma";
 import { z } from "zod";
-import { createPostSchema, updatePostSchema } from "./schemas";
+import { createPostSchema, updatePostSchema, createTagSchema } from "./schemas";
 
 export type Post = Prisma.PostGetPayload<{}>;
 type PostImages = {
@@ -8,3 +8,6 @@ type PostImages = {
 }
 export type CreatePostInput = z.infer<typeof createPostSchema> & PostImages;
 export type UpdatePostInput = z.infer<typeof updatePostSchema> & PostImages
+
+export type Tag = Prisma.TagGetPayload<{}>
+export type CreateTagInput = z.infer<typeof createTagSchema>

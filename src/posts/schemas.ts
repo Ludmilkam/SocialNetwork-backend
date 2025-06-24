@@ -26,3 +26,7 @@ export const updatePostSchema = z.object({
   content: z.string().min(1, 'Content is required').optional(),
   links: linksField
 });
+
+export const createTagSchema = z.object({
+    name: z.string()
+})
