@@ -1,10 +1,10 @@
-import { CreatePostInput } from "./types";
+import { CreatePostInput, UpdatePostInput } from "./types";
 import { PostsRepository } from "./repositories";
 import { NotFoundError } from "../core/repository";
 
 export class PostNotFoundError extends Error {
-  constructor() {
-    super("Post not found");
+  constructor(msg?: string) {
+    super(msg || "Post not found");
   }
 }
 
@@ -30,6 +30,17 @@ export class PostsService {
       throw err;
     }
   }
+  async updatePost(userId: number, postId: number, data: UpdatePostInput) {
+    try {
+      return await this.postsRepo.updateByIdAndAuthor(postId, userId, data);
+    }
+    catch (err) {
+      if (err instanceof NotFoundError) {
+        throw new PostNotFoundError("Post does not exist or does not belongs to you")
+      }
+      throw err
+    }
+  }
   async deletePostForUser(userId: number, postId: number): Promise<void> {
     try {
       await this.postsRepo.deletePostForUserById(userId, postId);
@@ -41,7 +52,8 @@ export class PostsService {
     }
   }
   async listPosts(currUserId: number) {
-    return await this.postsRepo.getAll(currUserId);
+    const posts = await this.postsRepo.getAll(currUserId);
+    return posts.map(post => ({ ...post, tags: post.tags.map(tag => tag.tag) }))
   }
   async listTags() {
     return await this.postsRepo.getAllTags();

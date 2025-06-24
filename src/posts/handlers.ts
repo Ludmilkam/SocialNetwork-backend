@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { validateObjectId, validateRequest } from "../core/validation";
 import { getSuccededResponse } from "../core/utils";
 import { requireAuthorized } from "../users/utils";
-import { createPostSchema } from "./schemas";
+import { createPostSchema, updatePostSchema } from "./schemas";
 import { PostNotFoundError, PostsService, postsService } from "./services";
 import { Config } from "../core/config";
 import { HTTPNotFoundError } from "../core/http-errors";
@@ -23,15 +23,41 @@ export class PostsHandlers {
     const body = validateRequest(req, createPostSchema);
     const images = req.files
       ? (req.files as Express.Multer.File[]).map((item) => ({
-          file: Config.getMediaServeUrl(),
-          filename: item.filename,
-        }))
+        file: Config.getMediaServeUrl(),
+        filename: item.filename,
+      }))
       : [];
     const post = await this.service.createPost(userId, {
       ...body,
       images,
     });
     res.status(200).json(getSuccededResponse(post));
+  };
+  public updatePost = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const userId = requireAuthorized(res);
+      const postId = Number(req.params.id);
+      const body = validateRequest(req, updatePostSchema);
+
+      const images = req.files
+        ? (req.files as Express.Multer.File[]).map((item) => ({
+          file: Config.getMediaServeUrl(),
+          filename: item.filename,
+        }))
+        : [];
+
+      const updatedPost = await this.service.updatePost(userId, postId, {
+        ...body,
+        images,
+      });
+
+      res.status(200).json(getSuccededResponse(updatedPost));
+    } catch (err) {
+      if (err instanceof PostNotFoundError) {
+        throw new HTTPNotFoundError(err.message)
+      }
+      throw err;
+    }
   };
 
   public deletePost = async (req: Request, res: Response): Promise<void> => {

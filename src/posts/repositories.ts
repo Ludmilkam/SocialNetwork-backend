@@ -1,22 +1,27 @@
-import { Post } from "./types";
+import { Post, UpdatePostInput } from "./types";
 import { prisma, getErrorCode, ErrorCodes } from "../prisma";
 import { AlreadyExistsError, NotFoundError } from "../core/repository";
 import { Prisma } from "../generated/prisma";
+const postInclude = {
+  tags: { include: { tag: true } },
+  author: { include: { avatars: true, user: true } },
+  images: true,
+  _count: { select: { likes: true, views: true } },
+} as const;
+
+type PostWithRelations = Prisma.PostGetPayload<{
+  include: typeof postInclude;
+}>;
 
 export class PostsRepository {
-  async getAll(excludeForAuthorId?: number) {
+  async getAll(excludeForAuthorId?: number): Promise<PostWithRelations[]> {
     const options: Prisma.PostFindManyArgs = {
-      include: {
-        tags: { include: { tag: true } },
-        author: { include: { avatars: true, user: true } },
-        images: true,
-        _count: { select: { likes: true, views: true } },
-      },
+      include: postInclude,
     };
     if (excludeForAuthorId) {
       options.where = { NOT: { author_id: excludeForAuthorId } };
     }
-    return await prisma.post.findMany(options);
+    return await prisma.post.findMany(options) as PostWithRelations[];
   }
 
   async deletePostForUserById(authorId: number, postId: number): Promise<void> {
@@ -45,5 +50,44 @@ export class PostsRepository {
   }
   async getAllTags() {
     return await prisma.tag.findMany({});
+  }
+  async updateByIdAndAuthor(postId: number, authorId: number, data: UpdatePostInput): Promise<Post> {
+    const updateData: Prisma.PostUpdateInput = {};
+
+    if (data.title !== undefined) {
+      updateData.title = data.title;
+    }
+
+    if (data.content !== undefined) {
+      updateData.content = data.content;
+    }
+
+    // Handle images update (replace existing)
+    if (data.images !== undefined) {
+      updateData.images = {
+        deleteMany: {}, // Delete existing images
+        create: data.images
+      };
+    }
+
+    // Handle links update (replace existing)
+    if (data.links) {
+      updateData.links = {
+        deleteMany: {}, // Delete existing links
+        create: data.links.map((url) => ({ url }))
+      };
+    }
+
+    try {
+      return await prisma.post.update({
+        where: { id: postId, author_id: authorId },
+        data: updateData
+      });
+    } catch (err) {
+      if (getErrorCode(err) === ErrorCodes.NotFound) {
+        throw new NotFoundError();
+      }
+      throw err;
+    }
   }
 }
