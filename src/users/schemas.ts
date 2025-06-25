@@ -40,8 +40,9 @@ export const updateUserSchema = z.object({
 
 export const createAlbumSchema = z.object({
   name: z.string().min(1, "Album name is required"),
-  subject: z.string().min(1, "Album subject is required"),
-  topic_id: z.number(),
+  topic_id: z.string()
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val), "Topic_id must be a number"),
 });
 
 export const updateAlbumSchema = z.object({
