@@ -119,6 +119,7 @@ export class UsersService {
       const newUser = await this.usersRepo.create({
         ...userData,
         username: "",
+        profile: { create: {} }
       });
       return { ...newUser, password: undefined };
     } catch (err) {
